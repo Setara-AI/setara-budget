@@ -1,0 +1,17 @@
+Section,Line,Quantity,Unit,Unit cost,Total
+Generation,Reference library,117,images,0.134,15.68
+Generation,Shot reference plates,3,images,0.134,0.4
+Generation,Video generation,16.0,seconds,1.04,16.64
+Labor,AI Supervisor / Lead,1,weeks x 6,6000.0,36000.0
+Labor,AI Producer / Coordinator,1,weeks x 6,4000.0,24000.0
+Labor,Generation Artist,1,weeks x 6,3500.0,21000.0
+Labor,Reference / Asset Artist,1,weeks x 6,3000.0,18000.0
+Labor,Continuity Supervisor,1,weeks x 6,2800.0,16800.0
+Labor,Editor / Assembly,1,weeks x 6,3500.0,21000.0
+Tooling,"Seats, storage, review",,,,3780.0
+Total,Direct cost,,,,140612.72
+Total,Contingency 15%,,,,21091.91
+Total,Margin 20%,,,,32340.93
+Total,BID,,,,194045.55
+Comparison,Traditional bid,,,,106250.0
+Comparison,Delta,,,,87795.55

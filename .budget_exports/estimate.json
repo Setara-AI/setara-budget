@@ -1,0 +1,179 @@
+{
+  "title": "Pasted script",
+  "script": {
+    "pages": 0.24,
+    "runtime_minutes": 0.2,
+    "scenes": 2,
+    "characters": [
+      "VIC",
+      "DANA"
+    ],
+    "locations": [
+      "WAREHOUSE",
+      "DOCKS"
+    ],
+    "props": [
+      "CRATE",
+      "CROWBAR",
+      "CONTAINER"
+    ]
+  },
+  "plan": {
+    "shots": 2,
+    "final_seconds": 10.0,
+    "billed_seconds": 16.0,
+    "images": 120,
+    "tiers": {
+      "simple": 2,
+      "moderate": 0,
+      "complex": 0,
+      "hero": 0
+    }
+  },
+  "models": {
+    "video": "seedance-2.5-1080p",
+    "video_per_second": 1.04,
+    "video_verified": false,
+    "image": "nano-banana-pro-2k",
+    "image_per_image": 0.134
+  },
+  "costs": {
+    "generation": 32.72,
+    "labor": 136800.0,
+    "tooling": 3780.0,
+    "direct": 140612.72,
+    "contingency": 21091.91,
+    "cost_to_deliver": 161704.63,
+    "margin": 32340.93,
+    "bid": 194045.55
+  },
+  "comparison": {
+    "traditional_bid": 106250.0,
+    "delta": 87795.55,
+    "delta_percent": 0.8263,
+    "shoot_days": 1.0
+  },
+  "staffing": {
+    "weeks": 6.0,
+    "headcount": 6,
+    "ai_headcount": 3,
+    "driver": "deadline",
+    "seats": [
+      {
+        "role": "ai_supervisor",
+        "name": "AI Supervisor / Lead",
+        "count": 1,
+        "weekly_rate": 6000.0,
+        "cost": 36000.0
+      },
+      {
+        "role": "producer",
+        "name": "AI Producer / Coordinator",
+        "count": 1,
+        "weekly_rate": 4000.0,
+        "cost": 24000.0
+      },
+      {
+        "role": "gen_artist",
+        "name": "Generation Artist",
+        "count": 1,
+        "weekly_rate": 3500.0,
+        "cost": 21000.0
+      },
+      {
+        "role": "asset_artist",
+        "name": "Reference / Asset Artist",
+        "count": 1,
+        "weekly_rate": 3000.0,
+        "cost": 18000.0
+      },
+      {
+        "role": "continuity",
+        "name": "Continuity Supervisor",
+        "count": 1,
+        "weekly_rate": 2800.0,
+        "cost": 16800.0
+      },
+      {
+        "role": "editor",
+        "name": "Editor / Assembly",
+        "count": 1,
+        "weekly_rate": 3500.0,
+        "cost": 21000.0
+      }
+    ],
+    "load": [
+      {
+        "role": "Generation Artist",
+        "unit": "shot_attempts",
+        "required": 3.2,
+        "capacity": 240.0,
+        "utilisation": 0.013333333333333334,
+        "short": false
+      },
+      {
+        "role": "Reference / Asset Artist",
+        "unit": "images",
+        "required": 120.2,
+        "capacity": 900.0,
+        "utilisation": 0.13355555555555557,
+        "short": false
+      },
+      {
+        "role": "Continuity Supervisor",
+        "unit": "images",
+        "required": 120.2,
+        "capacity": 1500.0,
+        "utilisation": 0.08013333333333333,
+        "short": false
+      },
+      {
+        "role": "Editor / Assembly",
+        "unit": "scenes",
+        "required": 2.0,
+        "capacity": 60.0,
+        "utilisation": 0.03333333333333333,
+        "short": false
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "number": 1,
+      "heading": "INT. WAREHOUSE - NIGHT",
+      "tier": "simple",
+      "score": 1,
+      "drivers": [
+        "+1 night / low-light continuity"
+      ],
+      "cast": [
+        "VIC"
+      ],
+      "props": [
+        "CRATE",
+        "CROWBAR"
+      ],
+      "shots": 1,
+      "attempts": 1.6,
+      "billed_seconds": 8.0
+    },
+    {
+      "number": 2,
+      "heading": "EXT. DOCKS - DAY",
+      "tier": "simple",
+      "score": 1,
+      "drivers": [
+        "+1 exterior world-building"
+      ],
+      "cast": [
+        "DANA"
+      ],
+      "props": [
+        "CONTAINER"
+      ],
+      "shots": 1,
+      "attempts": 1.6,
+      "billed_seconds": 8.0
+    }
+  ]
+}

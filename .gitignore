@@ -1,0 +1,19 @@
+# Audio scratch — 55MB of it, and nothing here uses it.
+*.wav
+*.m4a
+*.mp4
+*.mov
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Screenplays: client material. Never push a script by accident.
+*.pdf
+*.fdx
+web/_*.pdf
+
+# macOS
+.DS_Store

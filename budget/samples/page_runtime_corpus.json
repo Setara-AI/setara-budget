@@ -1,0 +1,485 @@
+[
+ {
+  "title": "Gravity",
+  "pages": 68,
+  "runtime_minutes": 91,
+  "genre": "Science fiction thriller / survival",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Lost in Translation",
+  "pages": 75,
+  "runtime_minutes": 102,
+  "genre": "Romantic comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Dunkirk",
+  "pages": 81,
+  "runtime_minutes": 106,
+  "genre": "Epic war",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Reservoir Dogs",
+  "pages": 93,
+  "runtime_minutes": 99,
+  "genre": "Crime / heist",
+  "draft": "revised draft dated October 22, 1990 (pre-shoot production draft)"
+ },
+ {
+  "title": "Jojo Rabbit",
+  "pages": 93,
+  "runtime_minutes": 108,
+  "genre": "Satirical war comedy-drama",
+  "draft": "shooting draft (Fox Searchlight FYC final script)"
+ },
+ {
+  "title": "WALL-E",
+  "pages": 94,
+  "runtime_minutes": 98,
+  "genre": "Animated science fiction",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Lighthouse",
+  "pages": 98,
+  "runtime_minutes": 109,
+  "genre": "Psychological horror / period drama",
+  "draft": "unknown"
+ },
+ {
+  "title": "Get Out",
+  "pages": 99,
+  "runtime_minutes": 104,
+  "genre": "Psychological horror",
+  "draft": "unknown"
+ },
+ {
+  "title": "Moonlight",
+  "pages": 99,
+  "runtime_minutes": 111,
+  "genre": "Coming-of-age drama",
+  "draft": "unknown (no draft designation on title page)"
+ },
+ {
+  "title": "Nightcrawler",
+  "pages": 100,
+  "runtime_minutes": 117,
+  "genre": "Neo-noir satirical thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Kill Bill Vol. 1",
+  "pages": 100,
+  "runtime_minutes": 110,
+  "genre": "Martial arts / action",
+  "draft": "production draft, volume-1 document (\"KILL BILL (volume 1)\", with table of contents)"
+ },
+ {
+  "title": "John Wick",
+  "pages": 100,
+  "runtime_minutes": 101,
+  "genre": "Action thriller / neo-noir",
+  "draft": "early draft"
+ },
+ {
+  "title": "Up",
+  "pages": 100,
+  "runtime_minutes": 96,
+  "genre": "Animated adventure / comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Juno",
+  "pages": 101,
+  "runtime_minutes": 96,
+  "genre": "Comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Fargo",
+  "pages": 104,
+  "runtime_minutes": 98,
+  "genre": "Black comedy / crime",
+  "draft": "unknown"
+ },
+ {
+  "title": "Whiplash",
+  "pages": 105,
+  "runtime_minutes": 106,
+  "genre": "Drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Little Miss Sunshine",
+  "pages": 109,
+  "runtime_minutes": 102,
+  "genre": "Comedy-drama (tragicomedy)",
+  "draft": "early draft"
+ },
+ {
+  "title": "Being John Malkovich",
+  "pages": 110,
+  "runtime_minutes": 113,
+  "genre": "Surrealist fantasy comedy-drama",
+  "draft": "unknown"
+ },
+ {
+  "title": "Alien",
+  "pages": 112,
+  "runtime_minutes": 117,
+  "genre": "Science fiction horror",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Manchester By The Sea",
+  "pages": 113,
+  "runtime_minutes": 137,
+  "genre": "Drama",
+  "draft": "unknown (no draft designation on title page)"
+ },
+ {
+  "title": "Lady Bird",
+  "pages": 115,
+  "runtime_minutes": 94,
+  "genre": "Coming-of-age comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Ex Machina",
+  "pages": 115,
+  "runtime_minutes": 108,
+  "genre": "Science fiction thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "No Country for Old Men",
+  "pages": 117,
+  "runtime_minutes": 122,
+  "genre": "Neo-Western crime thriller",
+  "draft": "unknown"
+ },
+ {
+  "title": "Arrival",
+  "pages": 118,
+  "runtime_minutes": 116,
+  "genre": "Science fiction drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Martian",
+  "pages": 118,
+  "runtime_minutes": 142,
+  "genre": "Science fiction / survival drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Hereditary",
+  "pages": 118,
+  "runtime_minutes": 127,
+  "genre": "Supernatural psychological horror",
+  "draft": "early draft (dated 11-30-2016, unlabeled)"
+ },
+ {
+  "title": "The Big Lebowski",
+  "pages": 119,
+  "runtime_minutes": 117,
+  "genre": "Neo-noir crime comedy",
+  "draft": "unknown"
+ },
+ {
+  "title": "Baby Driver",
+  "pages": 119,
+  "runtime_minutes": 113,
+  "genre": "Action / crime heist",
+  "draft": "early draft"
+ },
+ {
+  "title": "Lethal Weapon",
+  "pages": 121,
+  "runtime_minutes": 109,
+  "genre": "Action thriller / buddy cop",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Good Will Hunting",
+  "pages": 121,
+  "runtime_minutes": 126,
+  "genre": "Drama",
+  "draft": "early draft"
+ },
+ {
+  "title": "Dog Day Afternoon",
+  "pages": 122,
+  "runtime_minutes": 125,
+  "genre": "Crime drama (biographical)",
+  "draft": "final draft (undated)"
+ },
+ {
+  "title": "Goodfellas",
+  "pages": 122,
+  "runtime_minutes": 146,
+  "genre": "Biographical gangster / crime",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Die Hard",
+  "pages": 123,
+  "runtime_minutes": 132,
+  "genre": "Action / action-thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Knives Out",
+  "pages": 124,
+  "runtime_minutes": 130,
+  "genre": "Mystery / whodunit",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Everything Everywhere All at Once",
+  "pages": 125,
+  "runtime_minutes": 139,
+  "genre": "Absurdist comedy-drama / science fiction",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Logan",
+  "pages": 125,
+  "runtime_minutes": 137,
+  "genre": "Superhero / neo-Western action drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Michael Clayton",
+  "pages": 126,
+  "runtime_minutes": 120,
+  "genre": "Legal thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Toy Story",
+  "pages": 126,
+  "runtime_minutes": 81,
+  "genre": "Animated adventure comedy",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Big Short",
+  "pages": 127,
+  "runtime_minutes": 130,
+  "genre": "Biographical comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Chinatown",
+  "pages": 128,
+  "runtime_minutes": 130,
+  "genre": "Neo-noir mystery / thriller",
+  "draft": "shooting draft (3rd Draft, 10/9/73)"
+ },
+ {
+  "title": "The Prestige",
+  "pages": 128,
+  "runtime_minutes": 130,
+  "genre": "Science fiction / mystery psychological thriller",
+  "draft": "unknown"
+ },
+ {
+  "title": "The Incredibles",
+  "pages": 128,
+  "runtime_minutes": 115,
+  "genre": "Animated superhero / action adventure",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Eternal Sunshine of the Spotless Mind",
+  "pages": 129,
+  "runtime_minutes": 108,
+  "genre": "Science fiction romantic comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Inside Out",
+  "pages": 129,
+  "runtime_minutes": 95,
+  "genre": "Animated coming-of-age / comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Fight Club",
+  "pages": 130,
+  "runtime_minutes": 139,
+  "genre": "Psychological thriller / satirical drama",
+  "draft": "unknown"
+ },
+ {
+  "title": "Coco",
+  "pages": 130,
+  "runtime_minutes": 105,
+  "genre": "Animated fantasy / musical adventure",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Jerry Maguire",
+  "pages": 131,
+  "runtime_minutes": 138,
+  "genre": "Sports romantic comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Blade Runner",
+  "pages": 133,
+  "runtime_minutes": 117,
+  "genre": "Science fiction / neo-noir",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Matrix",
+  "pages": 133,
+  "runtime_minutes": 136,
+  "genre": "Science fiction action",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Erin Brockovich",
+  "pages": 139,
+  "runtime_minutes": 131,
+  "genre": "Biographical legal drama",
+  "draft": "unknown"
+ },
+ {
+  "title": "Spotlight",
+  "pages": 139,
+  "runtime_minutes": 128,
+  "genre": "Biographical drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Godfather",
+  "pages": 140,
+  "runtime_minutes": 175,
+  "genre": "Crime / epic gangster drama",
+  "draft": "shooting draft (Third Draft, March 29, 1971)"
+ },
+ {
+  "title": "The Dark Knight",
+  "pages": 140,
+  "runtime_minutes": 152,
+  "genre": "Superhero / crime thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Memento",
+  "pages": 140,
+  "runtime_minutes": 113,
+  "genre": "Neo-noir psychological thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Casino",
+  "pages": 140,
+  "runtime_minutes": 178,
+  "genre": "Epic gangster / crime drama",
+  "draft": "early draft"
+ },
+ {
+  "title": "Parasite",
+  "pages": 141,
+  "runtime_minutes": 132,
+  "genre": "Black comedy-drama thriller",
+  "draft": "shooting draft (NEON FYC awards screenplay, English)"
+ },
+ {
+  "title": "Inception",
+  "pages": 146,
+  "runtime_minutes": 148,
+  "genre": "Science fiction action",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Network",
+  "pages": 147,
+  "runtime_minutes": 121,
+  "genre": "Satirical black comedy-drama",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Departed",
+  "pages": 152,
+  "runtime_minutes": 151,
+  "genre": "Crime thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "Marriage Story",
+  "pages": 153,
+  "runtime_minutes": 137,
+  "genre": "Drama",
+  "draft": "unknown (no draft designation on title page)"
+ },
+ {
+  "title": "Se7en",
+  "pages": 155,
+  "runtime_minutes": 127,
+  "genre": "Crime thriller / neo-noir",
+  "draft": "early draft"
+ },
+ {
+  "title": "Interstellar",
+  "pages": 156,
+  "runtime_minutes": 169,
+  "genre": "Epic science fiction",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Apartment",
+  "pages": 158,
+  "runtime_minutes": 125,
+  "genre": "Romantic comedy-drama",
+  "draft": "shooting draft (undated, re-typed)"
+ },
+ {
+  "title": "Pulp Fiction",
+  "pages": 159,
+  "runtime_minutes": 154,
+  "genre": "Crime / neo-noir",
+  "draft": "shooting draft \u2014 \"Last Draft\", Miramax, May 1993"
+ },
+ {
+  "title": "Gone Girl",
+  "pages": 163,
+  "runtime_minutes": 149,
+  "genre": "Psychological thriller",
+  "draft": "shooting draft"
+ },
+ {
+  "title": "The Social Network",
+  "pages": 164,
+  "runtime_minutes": 120,
+  "genre": "Biographical drama",
+  "draft": "shooting draft (inferred - unlabeled)"
+ },
+ {
+  "title": "Inglourious Basterds",
+  "pages": 165,
+  "runtime_minutes": 153,
+  "genre": "War",
+  "draft": "final/last draft, July 2, 2008 (the draft that leaked; essentially the shooting script)"
+ },
+ {
+  "title": "Django Unchained",
+  "pages": 167,
+  "runtime_minutes": 165,
+  "genre": "Revisionist Western",
+  "draft": "shooting draft \u2014 Weinstein Company \"For Your Consideration\" 2012 awards script (scan)"
+ },
+ {
+  "title": "The Hateful Eight",
+  "pages": 171,
+  "runtime_minutes": 167,
+  "genre": "Western mystery thriller",
+  "draft": "final draft (Weinstein Co. \"For Your Consideration\" / Oscar submission PDF, undated, unspecified draft)"
+ }
+]

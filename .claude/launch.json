@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "studio",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "studio_app.py"
+      ],
+      "port": 7860
+    },
+    {
+      "name": "budget",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "budget_app.py"
+      ],
+      "port": 7870
+    },
+    {
+      "name": "topsheet",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "7880",
+        "--directory",
+        "web"
+      ],
+      "port": 7880
+    }
+  ]
+}

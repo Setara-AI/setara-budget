@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lsof -nP -iTCP -sTCP:LISTEN)",
+      "Read(//private/tmp/session_export_inspect/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(cd /tmp/session_export_inspect && echo \"=== context around 'stringout' hits ===\" && grep -an \"stringout\" logs/main.log | head -5 && echo \"\" && echo \"=== Does PROJECT SCRIPTVIDEO exist on THIS device? ===\" && find /Users/matthewwarter/Downloads /Users/matthewwarter/Desktop -maxdepth 2 -iname \"*scriptvideo*\" -o -iname \"*script*video*\" 2>/dev/null | head && echo \"\\(search done\\)\" && echo \"\" && echo \"=== current dir contents \\(the 'Studio' project\\) ===\" && ls -la \"/Users/matthewwarter/Desktop/CLAUDE TESTS\" 2>/dev/null | head -20)",
+      "Bash(rm -rf /tmp/session_export_inspect && echo \"cleaned up temp inspection dir\")",
+      "Read(//Users/matthewwarter/Desktop/**)",
+      "Bash(rm -rf /Users/matthewwarter/Desktop/scriptvideo)",
+      "Bash(git clone *)",
+      "Bash(npm --version)",
+      "Bash(git -C /Users/matthewwarter/Desktop/scriptvideo remote -v)",
+      "Bash(sw_vers)",
+      "Bash(curl -sI --max-time 12 https://nodejs.org/dist/index.json)",
+      "Bash(curl -s --max-time 12 https://nodejs.org/dist/index.json)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); lts=[r for r in d if r.get\\('lts'\\)]; print\\('Newest LTS:', lts[0]['version'], lts[0]['lts']\\) if lts else print\\('none'\\)\")",
+      "Bash(curl -s --max-time 15 https://nodejs.org/dist/index.json)",
+      "Bash(npm run *)",
+      "Bash(npx vitest *)",
+      "Bash(rm -f /tmp/sb_test_script.fountain)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python3 -c \"import sys,json;print\\('payload.period now:', repr\\(json.load\\(sys.stdin\\).get\\('period'\\)\\)\\)\")"
+    ]
+  }
+}
