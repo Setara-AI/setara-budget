@@ -1,0 +1,16 @@
+{
+  // Deploy config for Cloudflare Workers.
+  //
+  // This is a STATIC site - one self-contained HTML file, no build step and no
+  // server code - so there is no "main" entry. `assets.directory` is the whole
+  // configuration: Cloudflare serves ./web and nothing else.
+  //
+  // Cloudflare's newer flow runs `npx wrangler deploy`, which reads this file.
+  // Without it the deploy fails with no config found.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "setara-budget",
+  "compatibility_date": "2026-09-02",
+  "assets": {
+    "directory": "./web"
+  }
+}
