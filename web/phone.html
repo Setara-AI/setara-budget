@@ -1,0 +1,123 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setara — phone preview</title>
+
+<!--
+  A preview harness, not part of the app.
+
+  The budget tool is loaded in an iframe sized to a real iPhone. Media queries
+  respond to the FRAME's width, not the window's, so what you see here is the
+  same layout a phone gets - and because it iframes the live index.html rather
+  than copying it, it can never drift out of date.
+-->
+
+<style>
+  :root{
+    --bg:#F3EDF7; --panel:#FFFBFE; --ink:#1C1B1F; --muted:#49454F;
+    --line:#CAC4D0; --accent:#6750A4;
+    --font:"Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 20px 40px}
+
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+  h1{font-size:1.0625rem;font-weight:600;letter-spacing:-.01em}
+  h1 span{font-weight:400;color:var(--muted)}
+
+  .devices{display:flex;gap:6px;background:var(--panel);padding:4px;
+    border-radius:999px;box-shadow:0 1px 3px rgb(0 0 0/.12)}
+  .devices button{font:inherit;font-size:.75rem;font-weight:500;border:0;cursor:pointer;
+    background:none;color:var(--muted);padding:7px 14px;border-radius:999px;
+    transition:background .15s,color .15s}
+  .devices button:hover{color:var(--accent)}
+  .devices button[aria-pressed="true"]{background:var(--accent);color:#fff}
+
+  .tools{display:flex;gap:8px}
+  .tools button{font:inherit;font-size:.75rem;font-weight:500;cursor:pointer;
+    background:var(--panel);color:var(--muted);border:1px solid var(--line);
+    padding:7px 14px;border-radius:999px}
+  .tools button:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* The bezel. Rounded like a handset so the sticky header reads the way it
+     will on glass, with a notch to remind you the top strip is not free. */
+  .phone{position:relative;background:#111;border-radius:44px;padding:12px;
+    box-shadow:0 24px 60px -18px rgb(0 0 0/.5), 0 0 0 1px rgb(0 0 0/.25)}
+  /* Safari's own UI occupies the notch strip - the page starts below it. An
+     overlay drawn across the top misrepresents that, and made the app's header
+     look clipped by hardware. So: a status strip ABOVE the viewport, not over
+     it, with the notch cut into the strip. */
+  .status{height:26px;position:relative}
+  .status::before{content:"";position:absolute;top:-12px;left:50%;
+    transform:translateX(-50%);width:112px;height:28px;background:#111;
+    border-radius:0 0 16px 16px}
+  iframe{display:block;border:0;border-radius:34px;background:#fff}
+
+  .size{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .note{font-size:.75rem;color:var(--muted);max-width:52ch;text-align:center;line-height:1.55}
+  code{font-family:"Roboto Mono",ui-monospace,monospace;font-size:.6875rem;
+    background:var(--panel);padding:2px 6px;border-radius:4px}
+</style>
+
+<header>
+  <h1>Setara <span>— phone preview</span></h1>
+  <div class="devices" id="devices"></div>
+  <div class="tools">
+    <button id="reload">Reload</button>
+    <button id="rotate">Rotate</button>
+  </div>
+</header>
+
+<div class="size" id="size"></div>
+
+<div class="phone">
+  <div class="status"></div>
+  <iframe id="frame" title="Setara budget on a phone"></iframe>
+</div>
+
+<p class="note">This frames the real <code>index.html</code>, so it always matches
+what is deployed. Scroll and tap inside the phone exactly as you would on the
+handset — the layout is driven by the frame's width, not your window's.</p>
+
+<script>
+  const DEVICES = [
+    { name: "iPhone SE",  w: 375, h: 667 },
+    { name: "iPhone 15",  w: 390, h: 844 },
+    { name: "Pro Max",    w: 430, h: 932 },
+  ];
+
+  const frame = document.getElementById("frame");
+  const bar = document.getElementById("devices");
+  const sizeOut = document.getElementById("size");
+  let current = 1, landscape = false;
+
+  function apply() {
+    const d = DEVICES[current];
+    const [w, h] = landscape ? [d.h, d.w] : [d.w, d.h];
+    frame.style.width = w + "px";
+    frame.style.height = h + "px";
+    sizeOut.textContent = `${d.name} · ${w} × ${h}`;
+    for (const b of bar.children) b.setAttribute("aria-pressed", String(+b.dataset.i === current));
+  }
+
+  bar.innerHTML = DEVICES.map((d, i) =>
+    `<button data-i="${i}" aria-pressed="${i === current}">${d.name}</button>`).join("");
+  bar.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-i]");
+    if (!b) return;
+    current = +b.dataset.i;
+    apply();
+  });
+
+  document.getElementById("rotate").addEventListener("click", () => { landscape = !landscape; apply(); });
+  // cache-busted, so a reload here always fetches the file you just saved
+  document.getElementById("reload").addEventListener("click", () => {
+    frame.src = "/index.html?t=" + Date.now();
+  });
+
+  // set here rather than in the markup so it is always cache-busted: a stale
+  // frame after a save looks exactly like a change that did not work
+  frame.src = "/index.html?t=" + Date.now();
+  apply();
+</script>

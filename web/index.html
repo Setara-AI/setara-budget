@@ -2,6 +2,10 @@
 <!-- python -m http.server sends no cache headers, so a browser holds the old
      file after an edit - which looks exactly like a change that did not work. -->
 <meta http-equiv="cache-control" content="no-store">
+<!-- Without this a phone renders the page at a notional 980px and scales the
+     result down, so every media query below sits unused and the whole desktop
+     layout arrives shrunk. Desktop browsers ignore the tag entirely. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Production Top Sheet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -575,6 +579,12 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
   color:var(--md-on-surface-variant);
   transition:border-color var(--fast) var(--ease),color var(--fast) var(--ease)}
 .teamadd:hover{border-color:var(--md-primary);color:var(--md-primary)}
+
+/* Undo / redo. No label and no tooltip by request - a dimmed arrow that cannot
+   be pressed says everything the pair needs to say. */
+.histgroup{display:flex;align-items:center;gap:2px;flex:none}
+.histbtn svg{width:17px;height:17px}
+.histbtn:disabled{opacity:.28;cursor:default;pointer-events:none}
 
 /* Rename / delete on a production row. Held back until the row is hovered or
    focused so the list still reads as a list of names, not a toolbar. */
@@ -1181,6 +1191,122 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
   .page{padding:0 16px 60px}
 }
 
+
+/* ===========================================================================
+   PHONE  (<= 620px - every iPhone in portrait, nothing wider)
+
+   Built to Apple's HIG numbers rather than by eye:
+
+     tap target   44pt minimum          (a target can be 44 without LOOKING 44 -
+                                         the hit area comes from padding, which
+                                         is how a compact bar stays accessible)
+     type         17pt body / title
+                  15pt secondary, buttons
+                  13pt caption
+                  11pt floor            (the bubble labels were at 9px)
+     margins      16pt screen edge      (12 was thin enough to graze the bezel;
+                                         24 wastes a third of a 390pt screen)
+
+   Every rule is inside the media query, so the laptop layout is untouched -
+   asserted against a 16-property fingerprint taken before any of this landed.
+   ======================================================================== */
+@media (max-width: 620px) {
+  /* 16pt margins, plus the notch/home-indicator insets on top so nothing sits
+     under the hardware in landscape or under the home bar. */
+  .page{padding:0 max(16px, env(safe-area-inset-left)) calc(40px + env(safe-area-inset-bottom))}
+  .apphead{padding:8px 0 10px;margin-bottom:14px}
+
+  /* ONE row, not two. At 390pt the bar needs to lose about 150pt to stop
+     wrapping, and three of its controls are duplicates on a phone:
+
+       pencil + bin     every row of the production dropdown carries both
+       New production   the dropdown's own "+ New production" row
+
+     Export and Reset stay. To fit all four on one row the production name
+     takes whatever is left and truncates, rather than the row wrapping. */
+  .topbar{gap:8px;flex-wrap:nowrap}
+  #prodRename,#prodDelete,#newProduction,.histgroup{display:none}
+  .prodpick{flex:1 1 auto;min-width:0}
+  .prodpick .mdsel{min-width:0;flex:1 1 auto}
+  .mdsel-btn .label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .brand{gap:7px;margin-right:0}
+  .brand .mark{width:21px;height:21px}
+  .brand .wm{font-size:17px}          /* iOS title */
+  .brand em{display:none}
+  .prodpick .mdsel{max-width:none}
+  .prodpick .mdsel-btn{font-size:17px;font-weight:500;padding:6px 10px;min-height:44px}
+
+  /* Buttons: 15pt secondary text, visually 34pt, 44pt of hit area from padding.
+     -5px margin keeps the row from inheriting the full 44 as height. */
+  .pill-small,.pill-xs{font-size:15px;letter-spacing:0;height:auto;min-height:44px;
+    padding:5px 12px;margin-block:-5px;flex:none;white-space:nowrap}
+
+  /* Bid, Runtime, Delivery only. The generation and labour figures are three
+     scrolls down in the stack anyway, and six numbers meant either a swipe or
+     a header eating half the screen. Three fit, so nothing scrolls. */
+  .bubbles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+  .bubbles .cell:nth-child(n+4){display:none}
+  .bubbles .cell{padding:8px 10px 9px;gap:2px}
+  .bubbles .cell .kick-sm{font-size:11px;letter-spacing:.03em}   /* the iOS floor */
+  .bubbles .cell .v{font-size:19px;letter-spacing:-.02em}
+  .bubbles .cell.lead .v{font-size:20px}
+
+  /* The stack table carried Line / Amount / Share of bid. Three money columns
+     do not fit 390pt, and the share is already on the legend beside the donut,
+     so the column goes and the horizontal scroll goes with it. */
+  #stackTable th:nth-child(3),#stackTable td:nth-child(3){display:none}
+  .tablewrap{overflow-x:visible}
+  table.t{min-width:0}
+  table.t td{padding:9px 10px}
+  table.t th{padding:7px 10px 6px}
+
+  .stacklayout{gap:16px}
+  .pie svg{max-width:186px;max-height:186px}
+  .stackpanel .pie .pv{font-size:20px}
+  .stackpanel .pie .pk{font-size:11px}
+  .lg,.blegend{font-size:13px}                                   /* iOS caption */
+  .sec,.content{gap:16px}
+  .glass.pad{padding:16px 14px}
+  .plancard{padding:16px 14px 18px}
+
+  /* A scroll region inside a scrolling page is miserable on touch - you swipe
+     to move the page and the roster moves instead. */
+  .roster{max-height:none;overflow-y:visible}
+
+  /* 44pt hit areas throughout. */
+  .role .edit{min-height:44px;padding:6px 16px;font-size:13px}
+  .teamadd{min-height:44px;font-size:13px}
+  .mdsel-opt{min-height:44px;font-size:15px}
+  .opt-act{width:40px;height:40px}
+  .ratepen{width:40px;height:40px}
+  input[type=range]{height:44px}
+  input[type=number].teamrate{width:5.5ch;padding:6px 4px;font-size:13px}
+  input[type=text].teamname{font-size:15px;padding:6px}
+  .lever .top label{font-size:15px}
+  .rolehint,.teamnote,.gennote,.lgroup .note{font-size:13px}
+
+  .gantt .gl{width:92px}
+  .droptoast{left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));
+    transform:none;max-width:none}
+}
+
+/* Narrower than a Pro Max, the bar cannot hold brand + name + both buttons at
+   once. The "Setara" wordmark yields to the production name: knowing WHICH
+   production you are looking at beats a wordmark, the mark still carries the
+   brand, and 48pt is exactly what the name needed to stop truncating. */
+@media (max-width: 414px) {
+  .brand .wm{display:none}
+  .brand{margin-right:2px}
+}
+
+/* Very small phones (SE, mini): the three bubbles get tight. */
+@media (max-width: 380px) {
+  .bubbles{gap:6px}
+  .bubbles .cell{padding:8px 8px 10px}
+  .bubbles .cell .v{font-size:17px}
+  .bubbles .cell.lead .v{font-size:18px}
+}
+
 </style>
 
 <div class="shell">
@@ -1208,6 +1334,18 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
               fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
         </div>
         <span class="push"></span>
+        <div class="histgroup">
+          <button class="iconbtn histbtn" type="button" id="undoBtn" aria-label="Undo" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path
+              d="M7.5 5.5 3.5 9l4 3.5M3.9 9h7.35a4.25 4.25 0 0 1 0 8.5H8"
+              fill="none" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="iconbtn histbtn" type="button" id="redoBtn" aria-label="Redo" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path
+              d="M12.5 5.5 16.5 9l-4 3.5M16.1 9H8.75a4.25 4.25 0 0 0 0 8.5H12"
+              fill="none" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
         <button class="pill pill-ghost pill-small" type="button" id="newProduction">
           New production</button>
         <div class="menuwrap">
@@ -3777,7 +3915,61 @@ function syncTeamCosts(est) {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Undo / redo.
+
+   `snapshot()` and `restore()` already define what a production IS - they are
+   what the production picker switches between - so the history is just a list
+   of snapshots and a cursor. Nothing new needed modelling.
+
+   Three things it has to get right:
+     - a restore must not itself be recorded, or undo would ratchet in place
+     - typing must not push a state per keystroke, so pushes are debounced
+     - undoing and then editing has to drop the redo tail, not interleave
+   Snapshots hold `scriptText` by reference (JS strings are immutable and
+   shared), so a 40-deep history of a feature costs one copy of the script.  */
+const HISTORY_LIMIT = 40;
+let history = [], historyAt = -1, restoring = false, pushTimer = null;
+
+function syncHistoryButtons() {
+  const u = el("undoBtn"), r = el("redoBtn");
+  if (u) u.disabled = historyAt <= 0;
+  if (r) r.disabled = historyAt < 0 || historyAt >= history.length - 1;
+}
+
+function historyPush() {
+  if (restoring) return;
+  const snap = JSON.stringify(snapshot());
+  if (history[historyAt] === snap) return;       // nothing actually moved
+  history = history.slice(0, historyAt + 1);     // editing after an undo drops the tail
+  history.push(snap);
+  if (history.length > HISTORY_LIMIT) history.shift();
+  historyAt = history.length - 1;
+  syncHistoryButtons();
+}
+
+function historyGo(step) {
+  const to = historyAt + step;
+  if (to < 0 || to >= history.length) return;
+  historyAt = to;
+  restoring = true;
+  restore(JSON.parse(history[to]));
+  buildSelects();
+  buildRoster();
+  buildLevers();
+  renderProductions();
+  refresh();
+  restoring = false;
+  syncHistoryButtons();
+}
+
 function refresh() {
+  /* Debounced, so dragging a slider records where you let go rather than
+     every frame of the drag. */
+  if (!restoring) {
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(historyPush, 400);
+  }
   const est = render();
   syncGate();
   renderGenOut();
@@ -5003,6 +5195,9 @@ function bind() {
     ingest(file);
   });
 
+  el("undoBtn").addEventListener("click", () => historyGo(-1));
+  el("redoBtn").addEventListener("click", () => historyGo(1));
+
   el("newProduction").addEventListener("click", () => {
     const id = newProduction(`Untitled production ${state.productions.length + 1}`);
     switchProduction(id);        // lands on the upload gate, script empty
@@ -5210,4 +5405,5 @@ activeProduction().snap = snapshot();
 renderProductions();
 buildLevers();
 refresh();
+historyPush();          // the state you started from is the floor of the stack
 </script>
