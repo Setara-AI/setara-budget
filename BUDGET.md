@@ -664,9 +664,16 @@ Signed out, the app is not merely hidden — row-level security means the databa
 refuses the request too. If the Supabase CDN is blocked the app still runs, just
 without sync, rather than showing a blank page.
 
-**The landing screen.** No script means nothing to cost, so a new visitor lands
-on the uploader, not on a worked example wearing their production's name. The
-sample is one click away underneath the drop target.
+**The landing screen.** Every session opens here — signing in is the start of a
+job, and the job starts with a screenplay, so the app never reopens on the
+budget it happened to close on. The active production at sign-in is a fresh
+blank, and that blank lives only in memory: `cloudSave` refuses to write a
+production with no script, so signing in and looking around cannot litter the
+account with empty rows.
+
+Saved work stays one click away — the picker in the header, and chips under the
+drop target listing the six most recent productions. The sample is there too,
+so the tool can be shown to someone who has no screenplay on them.
 
 Both screens are full-bleed film: twelve stills in `web/stills/`, cross-faded
 two layers at a time so only two frames are ever decoded at once, shuffled per

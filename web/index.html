@@ -228,6 +228,21 @@ button,input,select,textarea{font-family:inherit;font-weight:inherit;color:inher
 .bigdrop .pill{margin-top:10px;pointer-events:none;height:44px;padding:0 26px;
   font-size:.9375rem;background:#F4F1EC;color:#101014;box-shadow:none}
 .herofoot{font-size:.875rem;color:rgba(244,241,236,.62)}
+/* A session now always opens here, so the work you already have has to be
+   reachable from here - not only from the picker in the corner. */
+.recents{display:flex;flex-direction:column;align-items:center;gap:11px;
+  margin-top:14px;max-width:min(640px,100%)}
+.recents .rlabel{font-size:.6875rem;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(244,241,236,.42)}
+.recents .rlist{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.rchip{font:inherit;font-size:.8125rem;color:#F4F1EC;cursor:pointer;
+  padding:9px 17px;border-radius:var(--r-full);max-width:26ch;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);
+  transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease),
+             transform var(--fast) var(--ease)}
+.rchip:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.42)}
+.rchip:active{transform:scale(.96)}
 .herofoot .linkbtn{color:#F4F1EC;font-size:.875rem}
 .emptygate .err{max-width:60ch;color:#FFE2DE;
   background:rgba(179,38,30,.28);border:1px solid rgba(255,150,140,.32)}
@@ -1491,6 +1506,9 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
   .bigdrop .sm{font-size:13px}
   .bigdrop .pill{height:44px;font-size:15px;margin-top:6px}
   .herofoot,.herofoot .linkbtn{font-size:13px}
+  .recents{margin-top:10px;gap:9px}
+  .recents .rlabel{font-size:11px;letter-spacing:.13em}
+  .rchip{font-size:13px;min-height:38px;max-width:18ch}
   .avatar{width:36px;height:36px;font-size:14px}
 
   .gate{padding:16px max(16px,env(safe-area-inset-left))}
@@ -1639,6 +1657,7 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
         </label>
         <p class="herofoot">or <button type="button" class="linkbtn" id="useSample">see
           it run on a sample script</button></p>
+        <div class="recents" id="recents" hidden></div>
         <div class="err" id="gateErr" hidden></div>
       </div>
 
@@ -4455,12 +4474,40 @@ function renderProductions() {
     + `</optgroup>`;
   el("prodDelete").disabled = !many;
   syncDropdown(select);
+  renderRecents();
+}
+
+/* The landing screen's own way back into saved work. Only productions that
+   reached the server appear - the blank this session opened on has no row, so
+   it never lists itself. */
+function renderRecents() {
+  const box = el("recents");
+  if (!box) return;
+  const saved = state.productions.filter(
+    (p) => p.row && p.id !== state.activeProduction);
+  box.hidden = !saved.length;
+  if (!saved.length) return;
+  box.innerHTML = `<span class="rlabel">Or pick up where you left off</span>`
+    + `<span class="rlist">`
+    + saved.slice(0, 6).map((p) =>
+        `<button type="button" class="rchip" data-id="${esc(p.id)}">${esc(p.name)}</button>`
+      ).join("")
+    + `</span>`;
 }
 
 /* A production takes the name of whatever script is dropped into it, unless you
    have renamed it yourself - and a placeholder is never a name you chose, so the
    title still wins over one of those. */
 const PLACEHOLDER_NAME = /^untitled production \d+$/i;
+
+/* Counting the list gives "Untitled production 2" twice the moment anything has
+   been deleted, and two identical names in the picker are indistinguishable.
+   Take the highest number already in use and go one past it. */
+function untitledName() {
+  const used = state.productions.map((p) =>
+    PLACEHOLDER_NAME.test(p.name) ? Number(p.name.match(/\d+$/)[0]) : 0);
+  return `Untitled production ${Math.max(0, ...used) + 1}`;
+}
 
 /* ---------------------------------------------------------------------------
    The title, off the title page.
@@ -4570,7 +4617,7 @@ function bindProductions() {
     if (choice === "__new") {
       /* No rename box here: the gate is about to ask for a script, and the
          script names the production. Click the pencil to override. */
-      const id = newProduction(`Untitled production ${state.productions.length + 1}`);
+      const id = newProduction(untitledName());
       return switchProduction(id);
     }
     switchProduction(choice);
@@ -5446,6 +5493,10 @@ function bind() {
   /* Nothing starts on the sample any more, so there has to be a way back to
      it - otherwise the only way to see the tool work is to own a screenplay.
      It sits outside the <label>, so this click cannot open the file dialog. */
+  el("recents").addEventListener("click", (e) => {
+    const chip = e.target.closest(".rchip");
+    if (chip) switchProduction(chip.dataset.id);
+  });
   el("useSample").addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -5519,7 +5570,7 @@ function bind() {
   el("redoBtn").addEventListener("click", () => historyGo(1));
 
   el("newProduction").addEventListener("click", () => {
-    const id = newProduction(`Untitled production ${state.productions.length + 1}`);
+    const id = newProduction(untitledName());
     switchProduction(id);        // lands on the upload gate, script empty
   });
   el("videoModel").addEventListener("change", (e) => {
@@ -5797,26 +5848,17 @@ async function pullProductions() {
       .order("updated_at", { ascending: false });
     if (error) throw error;
 
-    if (!data || !data.length) {
-      /* A new account starts where a new visitor does - on the uploader - and
-         that first production is written straight away so the account is never
-         empty on the server. */
-      state.productions = [];
-      state.activeProduction = null;
-      state.scriptText = "";
-      showSource("");
-      const id = newProduction("Untitled production 1");
-      state.activeProduction = id;
-      activeProduction().snap = snapshot();
-      renderProductions();
-      buildSelects(); buildRoster(); buildLevers(); refresh();
-      pulling = false;
-      return cloudSave(true);
-    }
+    /* A session opens on the uploader, never on the budget it happened to
+       close on. Signing in is the start of a job and the job starts with a
+       screenplay, so the saved work goes in the picker and onto the landing
+       screen, and the ACTIVE production is a fresh blank.
 
-    state.productions = data.map(productionFromRow);
+       That blank only ever exists in memory: `cloudSave` refuses to write a
+       production with no script, so signing in and looking around cannot
+       litter the account with empty rows. */
+    state.productions = (data || []).map(productionFromRow);
     state.activeProduction = null;
-    switchProduction(state.productions[0].id);
+    switchProduction(newProduction(untitledName()));
   } catch (err) {
     syncMark("failed");
     console.error("could not load productions:", err);
@@ -5839,6 +5881,11 @@ async function cloudSave(immediate) {
   if (!cloudReady() || !account || pulling) return;
   const production = activeProduction();
   if (!production) return;
+  /* Every session opens on a blank, and most pass through several. A production
+     with no screenplay is a form nobody has filled in, so it gets no row - while
+     one that ALREADY has a row is still updated, because emptying that would be
+     a deliberate act rather than an untouched default. */
+  if (!production.row && !state.scriptText.trim()) return;
   syncMark("saving");
   try {
     const payload = { user_id: account.id, name: production.name,
