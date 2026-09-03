@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+
+  // Static site: one self-contained HTML file in ./web, no build step. Vercel
+  // needs telling that ./web is the output, or it serves the repo root.
+  //
+  // Sits alongside wrangler.jsonc rather than replacing it - the same folder
+  // deploys to either host, so moving between them is a dashboard decision
+  // rather than a code change.
+  "outputDirectory": "web",
+  "cleanUrls": true,
+
+  "headers": [
+    {
+      // The app is one file that changes with every push, so it must not be
+      // cached: a stale index.html is indistinguishable from a broken deploy.
+      "source": "/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    }
+  ]
+}
