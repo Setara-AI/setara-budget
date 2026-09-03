@@ -1,0 +1,13 @@
+# Only ./web is deployed. Everything else in this repo is the Python engine,
+# its tests and the docs - none of it is served, and leaving it visible made
+# Vercel auto-detect a Python project from requirements.txt and try to install
+# it (requirements_face.txt alone pulls ~300MB of face-recognition models).
+budget/
+studio/
+tests/
+frontend-design/
+.budget_exports/
+.claude/
+*.py
+requirements*.txt
+*.md
