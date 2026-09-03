@@ -689,8 +689,13 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
    One page now, so the head has to carry what the rail and the tab bar used
    to. It stays in frame because the numbers ARE the navigation: you drag a
    lever half a page down and watch the bid move up here. */
-.apphead{position:sticky;top:0;z-index:40;margin:0 0 20px;
-  padding:14px 0 14px;background:var(--md-surface);
+/* Rounded to --r-lg like every other panel - it was the one square thing on the
+   page. It also floats 10px clear of the top when stuck: with the corners
+   rounded and the bar flush at top:0, the page scrolling underneath showed
+   through the two top notches, which reads as a rendering fault rather than a
+   card. The gap makes the rounding legible instead. */
+.apphead{position:sticky;top:10px;z-index:40;margin:0 0 20px;
+  padding:14px 20px;border-radius:var(--r-lg);background:var(--md-surface);
   box-shadow:0 1px 0 var(--md-outline-variant),0 10px 22px -18px rgb(0 0 0/.5)}
 .apphead .topbar{margin-bottom:0}
 
@@ -1213,8 +1218,12 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
 @media (max-width: 620px) {
   /* 16pt margins, plus the notch/home-indicator insets on top so nothing sits
      under the hardware in landscape or under the home bar. */
-  .page{padding:0 max(16px, env(safe-area-inset-left)) calc(40px + env(safe-area-inset-bottom))}
-  .apphead{padding:8px 0 10px;margin-bottom:14px}
+  .page{padding:0 max(12px, env(safe-area-inset-left)) calc(40px + env(safe-area-inset-bottom))}
+  /* The head is a rounded card now, so its contents need to sit inside the
+     curve instead of running out to it. 12px in, and the page gutter drops to
+     12 to pay for it - otherwise 16+12 either side would cost 56pt of a 390pt
+     screen and push the production name back into truncating. */
+  .apphead{padding:8px 12px 10px;margin-bottom:14px;top:8px}
 
   /* ONE row, not two. At 390pt the bar needs to lose about 150pt to stop
      wrapping, and three of its controls are duplicates on a phone:
@@ -2649,54 +2658,22 @@ function minutesPerPage(pages) {
    curve predicts. What is left is not length, it is how the picture MOVES:
 
      mean 0.998   median 1.009   sd 0.118   range 0.66 - 1.32
-     p10 0.836    p25 0.931     p75 1.055   p90 1.128
+     p5 0.810   p10 0.836   p25 0.931   p75 1.055   p90 1.128   p95 1.202
 
    And the ends are exactly who you would expect, which is the check that the
    number means what it says:
 
-     1.32 Casino        1.29 The Godfather    1.21 Goodfellas   - expansive
-     0.66 Toy Story     0.76 The Social Network  0.81 Lady Bird - brisk
+     1.32 Casino        1.29 The Godfather      1.21 Goodfellas  - expansive
+     0.66 Toy Story     0.76 The Social Network 0.81 Lady Bird   - brisk
 
    Scorsese and Coppola sit at the top, Sorkin's overlapping dialogue at the
-   bottom. So a director whose cut breathes is a real, measurable 1.2, and this
-   is the slider for saying so. 0.75-1.30 covers 96% of the corpus. */
-const PACING_REFERENCE = [
-  [0.75, "very brisk — Toy Story 0.66, Inside Out 0.76"],
-  [0.85, "brisk — The Social Network 0.76, Lady Bird 0.81"],
-  [0.95, "tighter than most"],
-  [1.00, "the corpus norm"],
-  [1.05, "a shade unhurried"],
-  [1.10, "unhurried — The Dark Knight 1.12, Interstellar 1.13"],
-  [1.20, "expansive — Manchester 1.20, Goodfellas 1.21"],
-  [1.30, "epic — The Godfather 1.29, Casino 1.32"],
-];
-/* Measured percentiles of the residual, so the slider can say how UNUSUAL a
-   setting is rather than only what it is called. */
-const PACING_PERCENTILES = [
-  [0.810, 5], [0.836, 10], [0.931, 25], [1.009, 50],
-  [1.055, 75], [1.128, 90], [1.202, 95],
-];
-/* Interpolated, not stepped. Stepping reported the percentile BOUNDARY rather
-   than the rank, so the default 1.00 - which sits just under the 1.009 median -
-   claimed to be slower than only 25% of films instead of about half. */
-function pacingRank(v) {
-  const pts = PACING_PERCENTILES;
-  if (v <= pts[0][0]) return "slower than under 5% of films";
-  if (v >= pts[pts.length - 1][0]) return "slower than over 95% of films";
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x0, p0] = pts[i], [x1, p1] = pts[i + 1];
-    if (v <= x1) {
-      const pct = Math.round(p0 + (p1 - p0) * (v - x0) / (x1 - x0));
-      return `slower than ${pct}% of films`;
-    }
-  }
-  return "slower than half of films";
-}
-const pacingNote = (v) => {
-  let note = PACING_REFERENCE[0][1];
-  for (const [at, text] of PACING_REFERENCE) if (v >= at - 1e-9) note = text;
-  return `${note} · ${pacingRank(v)}`;
-};
+   bottom. So a director whose cut breathes is a real, measurable 1.2, and the
+   slider is for saying so. Its 0.75-1.30 range is p5 to p95 - 96% of the corpus.
+
+   The slider used to caption itself with the nearest reference film and a
+   percentile ("the corpus norm - slower than 47% of films"). The tables and the
+   interpolation that produced that line are gone with it; the numbers above are
+   the record, and BUDGET.md carries the full working.  */
 
 const minutesFromPages = (pages, pacing = 1) =>
   (pages > 0 ? pages * minutesPerPage(pages) * (pacing > 0 ? pacing : 1) : 0);
@@ -2838,7 +2815,8 @@ const FORMULA = {
   revisionsPerScene: 1,           // rounds the MODELS are paid for — fixed
   labourRevisions: 2,
   /* How the picture MOVES, as a multiple of what its length alone predicts.
-     Fitted residual across 69 films: mean 0.998, sd 0.118. See PACING_REFERENCE. */
+     Fitted residual across 69 films: mean 0.998, sd 0.118. The working is in
+     the PACING comment above minutesFromPages, and in BUDGET.md. */
   pacing: 1.0,             // rounds the CREW works — the lever
   revisionShares: [1.0, 1.0],     // yours — every revision is a FULL redo
 
@@ -3630,33 +3608,41 @@ function crewMinutesPerWeek(roles, projectWeeks) {
    ship in the assumptions export - auditable, not adjustable. Crew is not here
    either: headcount sits on the roster row, pay and delivered minutes in that
    role's Edit panel, in "Crew & weekly rates".  */
+/* One plain sentence each, and no numbers in them - the value is already sitting
+   beside the label and repeating it in the sentence just dated the description
+   to whatever the dial happened to say. These describe the DIAL, not this bid. */
 const LEVER_GROUPS = [
   {
     title: "Assumptions",
-    note: "How much gets made for every minute that survives, how many attempts "
-      + "it takes to land one image, how many times the crew is asked to do it "
-      + "again, how fast the picture moves, and what you carry on top.",
     levers: [
       { id: "generatedPerUsable", label: "Shooting ratio", min: 1, max: 15, step: 0.5,
         get: () => cfg().generatedPerUsable, set: (v) => (cfg().generatedPerUsable = v),
-        fmt: (v) => `${v}:1`, sub: () => "minutes generated per usable minute" },
+        fmt: (v) => `${v}:1`,
+        sub: () => "How many minutes of video you make for every minute that ends "
+          + "up in the film." },
       { id: "generationsPerImage", label: "Generations per image", min: 1, max: 40, step: 1,
         get: () => cfg().generationsPerImage, set: (v) => (cfg().generationsPerImage = v),
-        fmt: (v) => `${v}:1`, sub: () => "attempts per plate and per keyframe" },
+        fmt: (v) => `${v}:1`,
+        sub: () => "How many versions of a picture you ask for to get one good "
+          + "enough to use." },
       { id: "labourRevisions", label: "Revision rounds", min: 0, max: 8, step: 1,
         get: () => cfg().labourRevisions, set: (v) => (cfg().labourRevisions = v),
         fmt: (v) => v,
-        sub: () => `${labourMultiplier(cfg()).toFixed(1)}× the film in crew time` },
+        sub: () => "How many times the crew redoes the whole film after the first "
+          + "version." },
       /* Runtime drives shots, video seconds and the delivery phase, so this one
-         dial moves nearly every number below it. */
+         dial moves nearly every number below it. The 0.75-1.30 range is p5 to
+         p95 of the pacing residual measured across the 69-film corpus. */
       { id: "pacing", label: "Pacing", min: 0.75, max: 1.3, step: 0.05,
         get: () => cfg().pacing ?? 1, set: (v) => (cfg().pacing = v),
         fmt: (v) => `${v.toFixed(2)}×`,
-        sub: () => pacingNote(cfg().pacing ?? 1) },
+        sub: () => "How slowly the film plays — higher means the same script "
+          + "becomes a longer film." },
       { id: "contingency", label: "Contingency", min: 0, max: 0.5, step: 0.01,
         get: () => state.contingency, set: (v) => (state.contingency = v),
         fmt: (v) => `${Math.round(v * 100)}%`,
-        sub: () => "the only thing added on top of direct cost" },
+        sub: () => "A cushion added on top of everything else, in case the job "
+          + "costs more than planned." },
     ],
   },
 ];
