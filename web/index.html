@@ -6,6 +6,9 @@
      result down, so every media query below sits unused and the whole desktop
      layout arrives shrunk. Desktop browsers ignore the tag entirely. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The only script this page loads. If it fails the app still runs, just
+     without sync - see cloudReady() below. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <title>Production Top Sheet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -153,35 +156,128 @@ button,input,select,textarea{font-family:inherit;font-weight:inherit;color:inher
 .page{position:relative;z-index:1;padding:28px 32px 80px;
   width:100%;margin:0;display:flex;flex-direction:column;gap:24px}
 
-/* ---------- the empty gate ---------- */
-.emptygate{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:20px;min-height:calc(100vh - 210px);text-align:center;padding:24px 0}
-.bigdrop{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;
-  width:min(560px,100%);padding:56px 48px;cursor:pointer;
-  border:2px dashed var(--md-outline);border-radius:var(--r-3xl);
-  background:var(--md-surface-container);
+/* ---------- the cinematic backdrop ----------
+   Both front doors - the sign-in gate and the empty landing screen - run one of
+   these. Two layers cross-fade, so only ever two frames are decoded at once,
+   and the next one is fetched before its turn: a fade into an image that has
+   not arrived reads as a flicker rather than a cut. */
+.filmstrip{position:absolute;inset:0;z-index:0;overflow:hidden;
+  background:#0B0B0D;border-radius:inherit;pointer-events:none}
+.filmstrip .frame{position:absolute;inset:-2%;background-size:cover;
+  background-position:center;opacity:0;
+  transition:opacity 2000ms cubic-bezier(.4,0,.2,1)}
+.filmstrip .frame.on{opacity:1}
+.filmstrip .frame.drift{animation:filmdrift 16s linear both}
+@keyframes filmdrift{from{transform:scale(1.04)}to{transform:scale(1.12)}}
+
+/* The scrim. The stills are busy and unpredictable, so type is never trusted to
+   the frame underneath - it sits on this, and reads the same on every one. */
+.filmstrip::after{content:"";position:absolute;inset:0;z-index:2;
+  background:
+    radial-gradient(115% 85% at 50% 42%,rgba(6,6,8,.26) 0%,rgba(6,6,8,.62) 58%,rgba(6,6,8,.88) 100%),
+    linear-gradient(to bottom,rgba(6,6,8,.58),rgba(6,6,8,.18) 40%,rgba(6,6,8,.74));
+  transition:background var(--std) var(--ease)}
+/* 35mm grain, generated rather than downloaded. */
+.filmstrip::before{content:"";position:absolute;inset:-120px;z-index:3;
+  opacity:.15;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+  animation:grainshift 800ms steps(1) infinite}
+@keyframes grainshift{
+  0%{transform:translate(0,0)}   20%{transform:translate(-34px,18px)}
+  40%{transform:translate(26px,-28px)} 60%{transform:translate(-18px,-14px)}
+  80%{transform:translate(30px,24px)} 100%{transform:translate(0,0)}}
+@media(prefers-reduced-motion:reduce){
+  .filmstrip .frame{transition:none}
+  .filmstrip .frame.drift{animation:none}
+  .filmstrip::before{animation:none}}
+
+/* ---------- the empty gate: the landing screen ----------
+   With no script there is nothing to cost, so the first thing anyone sees is
+   the uploader. It is the front door of the product, so it is dressed like
+   one - the film cycles behind, the words sit on the scrim. */
+.emptygate{position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;text-align:center;
+  min-height:calc(100vh - 190px);padding:64px 24px;overflow:hidden;
+  border-radius:var(--r-3xl);background:#0B0B0D;
+  box-shadow:0 30px 70px -34px rgb(0 0 0/.5)}
+/* Everything EXCEPT the film sits above it. Without the :not(), this rule
+   outranks .filmstrip's own `position:absolute` - it is written later at equal
+   specificity - and the backdrop collapses to a 0x0 flex item. */
+.emptygate > *:not(.filmstrip){position:relative;z-index:1}
+.emptygate .eyebrow{font-size:.6875rem;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(244,241,236,.6)}
+.bigdrop{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;
+  width:min(560px,100%);padding:44px 40px;cursor:pointer;color:#F4F1EC;
+  border:1px dashed rgba(244,241,236,.26);border-radius:var(--r-2xl);
+  background:color-mix(in srgb,#0C0C10 40%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
   transition:border-color var(--std) var(--ease),background var(--std) var(--ease),
              transform var(--std) var(--ease),box-shadow var(--std) var(--ease)}
-.bigdrop:hover,.bigdrop.over{border-color:var(--md-primary);box-shadow:var(--e3);
-  background:color-mix(in srgb,var(--md-primary) 6%,var(--md-surface-container));
-  transform:scale(1.01)}
-.bigdrop.over{border-style:solid;transform:scale(1.01)}
-.emptygate.over{background:color-mix(in srgb,var(--md-primary) 4%,transparent);
-  border-radius:var(--r-3xl)}
+.bigdrop:hover,.bigdrop.over{border-color:rgba(244,241,236,.62);
+  background:color-mix(in srgb,#0C0C10 58%,transparent);
+  box-shadow:0 24px 60px -24px rgb(0 0 0/.8);transform:scale(1.008)}
+.bigdrop.over{border-style:solid}
+/* Dragging over: the film steps back so the target is unmistakable. */
+.emptygate.over .filmstrip::after{background:rgba(6,6,8,.84)}
 .bigdrop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.bigdrop .art{width:64px;height:64px}
+.bigdrop .art{width:52px;height:52px;opacity:.92}
 .bigdrop .art svg{width:100%;height:100%;display:block}
-.bigdrop .big{font-size:1.5rem;font-weight:500}
-.bigdrop .sm{font-size:.875rem;color:var(--md-on-surface-variant)}
-.bigdrop .pill{margin-top:8px;pointer-events:none}
-.gatewhy{max-width:56ch;font-size:.875rem;color:var(--md-on-surface-variant);line-height:1.6}
+.bigdrop .big{font-size:1.75rem;font-weight:500;letter-spacing:-.02em;line-height:1.15}
+.bigdrop .sm{font-size:.875rem;line-height:1.55;max-width:34ch;
+  color:rgba(244,241,236,.66)}
+.bigdrop .pill{margin-top:10px;pointer-events:none;height:44px;padding:0 26px;
+  font-size:.9375rem;background:#F4F1EC;color:#101014;box-shadow:none}
+.herofoot{font-size:.875rem;color:rgba(244,241,236,.62)}
+.herofoot .linkbtn{color:#F4F1EC;font-size:.875rem}
+.emptygate .err{max-width:60ch;color:#FFE2DE;
+  background:rgba(179,38,30,.28);border:1px solid rgba(255,150,140,.32)}
+.gatewhy{max-width:56ch;font-size:.875rem;color:rgba(244,241,236,.66);line-height:1.6}
 /* Gated: the views and tabs go, but the production picker stays — you must
    still be able to switch, rename or delete a production you cannot yet cost. */
+/* ---------- gated: the landing screen is a title card ----------
+   No script means nothing to cost, so this is not the app with an empty middle
+   - it is the front of the product, and it gets the same full-bleed film the
+   sign-in gate does, with the chrome floating on top of it.
+
+   Every rule here is scoped to body.gated. The moment a screenplay lands the
+   class comes off and the app is the app again, unchanged. */
 body.gated .content,body.gated .bubbles{display:none !important}
 body.gated .topbar .counter,
 body.gated #resetPlan{display:none !important}
-body.gated .apphead{box-shadow:none;position:static}
-body.gated .emptygate{min-height:calc(100vh - 210px)}
+body.gated .apphead{box-shadow:none;position:static;background:transparent}
+/* The light blur shapes belong to the light app; on film they are haze. */
+body.gated .dot-grid{display:none}
+/* The page reserves scrollbar space, and a fixed element's box stops short of
+   it - so the light canvas showed as a strip down the right of the film. The
+   surfaces underneath go dark for the duration. */
+body.gated,body.gated .main{background:#0B0B0D}
+/* Fixed, so the film runs under the header and out to all four edges. It is a
+   descendant of .page (z-index 1), so it still paints over .main's surface. */
+body.gated #heroFilm{position:fixed;border-radius:0}
+body.gated .emptygate{background:transparent;box-shadow:none;border-radius:0;
+  padding:24px 24px 72px;min-height:calc(100vh - 160px)}
+
+/* The chrome, dressed for film. */
+body.gated .brand .mark{background:#F4F1EC}
+body.gated .brand .wm{color:#F4F1EC}
+body.gated .brand em{color:rgba(244,241,236,.55)}
+body.gated .mdsel-btn{color:#F4F1EC;background:rgba(255,255,255,.07);
+  border-bottom-color:rgba(255,255,255,.28)}
+body.gated .mdsel-btn:hover{background:rgba(255,255,255,.13)}
+body.gated .mdsel-btn .caret{color:rgba(244,241,236,.7)}
+body.gated .iconbtn{color:rgba(244,241,236,.72)}
+body.gated .iconbtn:hover{color:#F4F1EC;background:rgba(255,255,255,.13)}
+body.gated .iconbtn.danger:hover{color:#FFB4AB;background:rgba(255,180,171,.14)}
+body.gated .pill-ghost{color:#F4F1EC;border-color:rgba(255,255,255,.3);
+  background:rgba(255,255,255,.05)}
+body.gated .pill-ghost:hover{background:rgba(255,255,255,.14)}
+body.gated .pill-dark{background:#F4F1EC;color:#101014}
+body.gated .pill-dark:hover{background:#fff}
+body.gated .avatar{background:rgba(255,255,255,.1);color:#F4F1EC;
+  border-color:rgba(255,255,255,.22)}
+body.gated .avatar:hover{background:rgba(255,255,255,.18);
+  border-color:rgba(255,255,255,.4)}
+body.gated .droptoast{color:#F4F1EC}
 
 /* ---------- topbar ---------- */
 .topbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:0 0 4px}
@@ -311,7 +407,7 @@ table.t td.wrap{white-space:normal}
 .fld .top label{font-size:.8125rem;color:var(--md-on-surface-variant)}
 .fld .v{font-size:.875rem;font-weight:500;color:var(--md-primary)}
 
-input[type=text],input[type=number],input[type=date],textarea{
+input[type=text],input[type=number],input[type=date],input[type=password],textarea{
   background:var(--md-surface-container-low);
   border:none;border-bottom:2px solid var(--md-outline);
   border-radius:var(--r-sm) var(--r-sm) 0 0;
@@ -319,9 +415,9 @@ input[type=text],input[type=number],input[type=date],textarea{
   font-variant-numeric:tabular-nums;
   transition:border-color var(--fast) var(--ease),background var(--fast) var(--ease);
 }
-input[type=text]:hover,input[type=number]:hover,textarea:hover{
+input[type=text]:hover,input[type=number]:hover,input[type=password]:hover,textarea:hover{
   background:color-mix(in srgb,var(--md-surface-container-low) 80%,var(--md-primary) 6%)}
-input[type=text]:focus,input[type=number]:focus,textarea:focus{
+input[type=text]:focus,input[type=number]:focus,input[type=password]:focus,textarea:focus{
   outline:none;border-bottom-color:var(--md-primary);
   background:color-mix(in srgb,var(--md-surface-container-low) 75%,var(--md-primary) 8%)}
 input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--md-on-surface) 50%,transparent)}
@@ -613,6 +709,75 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
 .rolehint{font-size:.75rem;line-height:1.55;color:var(--md-on-surface-variant);
   margin:2px 0 4px}
 .rolehint b{font-weight:600;color:var(--md-on-surface)}
+
+/* ---------- the sign-in gate ----------
+   The first thing anyone ever sees of this product, so it is a title card: the
+   film cycles full-bleed and the form floats on it in dark glass. */
+.gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;
+  padding:24px;background:#08080A;overflow:hidden}
+.gate[hidden]{display:none}
+.gatecard{position:relative;z-index:1;width:min(100%,392px);
+  display:flex;flex-direction:column;gap:18px;color:#F4F1EC;
+  background:color-mix(in srgb,#0C0C10 62%,transparent);
+  -webkit-backdrop-filter:blur(22px) saturate(120%);
+  backdrop-filter:blur(22px) saturate(120%);
+  border:1px solid rgba(255,255,255,.13);border-radius:var(--r-xl);
+  box-shadow:0 40px 90px -30px rgb(0 0 0/.9);padding:34px 32px 28px}
+/* The mark is painted through a mask, so on film it is simply painted white. */
+.gate .brand .mark{background:#F4F1EC}
+/* The topbar drops the wordmark and the descriptor to save a cramped row on a
+   phone. The sign-in card has the room, and a login screen with no name on it
+   is just a form - so they are put back here, by specificity, at every width. */
+.gate .brand .wm{display:inline}
+.gate .brand em{display:inline}
+.gate .brand .wm{color:#F4F1EC}
+.gate .brand em{color:rgba(244,241,236,.6)}
+.gatecard h1{font-size:1.5rem;font-weight:500;letter-spacing:-.015em}
+.gatecard form{display:flex;flex-direction:column;gap:16px}
+
+/* The roster's `.mini` styling is scoped to `.role .mini`, so these labels were
+   inheriting nothing and the two fields did not match. Stated explicitly here,
+   and deliberately a plain login form: sentence-case labels above full-width
+   boxes of equal height, rather than the app's small-caps control labels. */
+.gatecard .mini{display:flex;flex-direction:column;gap:6px}
+.gatecard .mini > span{font-size:.8125rem;font-weight:400;letter-spacing:0;
+  text-transform:none;color:rgba(244,241,236,.66)}
+.gate .gatecard input{width:100%;height:48px;padding:0 14px;font-size:.9375rem;
+  line-height:48px;text-align:left;color:#F4F1EC;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--r-md);box-shadow:none;
+  transition:border-color var(--fast) var(--ease),background var(--fast) var(--ease)}
+.gate .gatecard input:hover{border-color:rgba(255,255,255,.3)}
+.gate .gatecard input:focus{outline:none;border-color:rgba(255,255,255,.55);
+  background:rgba(255,255,255,.1)}
+.gate .gatecard input::placeholder{color:rgba(244,241,236,.32)}
+/* Chrome paints autofilled fields its own near-white, which would knock a hole
+   in the card. There is no property for it - only this inset-shadow trick. */
+.gate .gatecard input:-webkit-autofill,
+.gate .gatecard input:-webkit-autofill:hover,
+.gate .gatecard input:-webkit-autofill:focus{
+  -webkit-text-fill-color:#F4F1EC;caret-color:#F4F1EC;
+  -webkit-box-shadow:0 0 0 1000px #16161C inset;
+  transition:background-color 9999s ease-in-out 0s}
+.gate .gatecard .pill{width:100%;height:48px;justify-content:center;margin-top:4px;
+  font-size:.9375rem;background:#F4F1EC;color:#101014;border:0;box-shadow:none}
+.gate .gatecard .pill:hover{background:#fff}
+.gate .gatecard .pill[disabled]{background:rgba(244,241,236,.4);color:#101014}
+.gatecard .err{margin:0;color:#FFE2DE;background:rgba(179,38,30,.3);
+  border:1px solid rgba(255,150,140,.34)}
+.gatefoot{font-size:.75rem;line-height:1.5;color:rgba(244,241,236,.55)}
+/* The page behind the gate must not scroll or be reachable by tab. */
+body.locked{overflow:hidden}
+
+/* A quiet dot rather than a "Saved!" toast - it is reassurance, not news. */
+.syncdot{width:7px;height:7px;flex:none;border-radius:var(--r-full);
+  background:var(--md-outline-variant);transition:background var(--std) var(--ease)}
+.syncdot[hidden]{display:none}
+.syncdot.saving{background:var(--md-primary)}
+.syncdot.saved{background:#3f7d54}
+.syncdot.failed{background:var(--md-error,#B3261E)}
+.linkbtn{border:0;background:none;color:var(--md-primary);cursor:pointer;
+  font:inherit;font-size:.8125rem;padding:4px;text-decoration:underline}
 
 /* ---------- pages ---------- */
 /* One page, so there is no view to show or hide any more - just a column that
@@ -1018,6 +1183,22 @@ table.fiolist tbody tr{cursor:pointer}
 
 /* ---------- export menu ---------- */
 .menuwrap{position:relative}
+/* Who you are signed in as - deliberately NOT another pill. Export and Reset
+   are things you DO; this is a place you ARE, so it takes a different shape:
+   a round initial, the convention every other app already taught the user. */
+.avatar{width:34px;height:34px;flex:none;display:grid;place-items:center;
+  padding:0;cursor:pointer;border-radius:var(--r-full);
+  border:1px solid var(--md-outline-variant);background:var(--md-secondary-container);
+  color:var(--md-on-secondary-container);
+  font:inherit;font-size:.8125rem;font-weight:600;letter-spacing:.01em;
+  text-transform:uppercase;line-height:1;
+  transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease),
+             transform var(--fast) var(--ease)}
+.avatar:hover{border-color:var(--md-primary);
+  background:color-mix(in srgb,var(--md-primary) 16%,var(--md-secondary-container))}
+.avatar:active{transform:scale(.94)}
+.avatar[aria-expanded="true"]{border-color:var(--md-primary);
+  background:color-mix(in srgb,var(--md-primary) 20%,var(--md-secondary-container))}
 .menu{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(340px,80vw);
   display:flex;flex-direction:column;padding:8px;border-radius:var(--r-lg);
   background:var(--md-surface-container-high,var(--md-surface-container));
@@ -1297,6 +1478,26 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
   .gantt .gl{width:92px}
   .droptoast{left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));
     transform:none;max-width:none}
+
+  /* The two front doors on glass. The film stays full-bleed - it is the whole
+     point - but the type comes down to iOS sizes and the drop target loses the
+     padding it does not have room for. */
+  .emptygate{min-height:calc(100vh - 150px);padding:40px 14px;gap:14px;
+    border-radius:var(--r-2xl)}
+  .emptygate .eyebrow{font-size:11px;letter-spacing:.14em}
+  .bigdrop{padding:28px 20px;gap:10px;border-radius:var(--r-xl)}
+  .bigdrop .art{width:42px;height:42px}
+  .bigdrop .big{font-size:22px}
+  .bigdrop .sm{font-size:13px}
+  .bigdrop .pill{height:44px;font-size:15px;margin-top:6px}
+  .herofoot,.herofoot .linkbtn{font-size:13px}
+  .avatar{width:36px;height:36px;font-size:14px}
+
+  .gate{padding:16px max(16px,env(safe-area-inset-left))}
+  .gatecard{padding:26px 22px 22px;gap:16px}
+  .gatecard h1{font-size:22px}
+  /* 16px, so iOS does not zoom the page when the field takes focus. */
+  .gate .gatecard input{font-size:16px}
 }
 
 /* Narrower than a Pro Max, the bar cannot hold brand + name + both buttons at
@@ -1317,6 +1518,37 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
 }
 
 </style>
+
+<!-- Sign-in gate. Covers the app until there is a session, so a signed-out
+     visitor never sees a budget - and cannot: the database refuses them too.
+
+     Username, not email. Supabase identifies users by email address, so the
+     username is mapped to <name>@ACCOUNT_DOMAIN before it is sent. A client
+     types "acmefilms" and never sees an address; nothing is ever emailed.
+     The trade is that there is no self-service password reset - you reset it
+     for them in the Supabase dashboard, which for a handful of clients is
+     better anyway, since it keeps you in control of who has access. -->
+<div class="gate" id="authGate" hidden>
+  <div class="filmstrip" id="gateFilm" aria-hidden="true"></div>
+  <div class="gatecard">
+    <span class="brand"><i class="mark" aria-hidden="true"></i>
+      <span class="wm">Setara</span><em>Production budget</em></span>
+    <h1>Sign in</h1>
+
+    <form id="authForm" autocomplete="on">
+      <label class="mini"><span>Username</span>
+        <input type="text" id="authUser" required autocomplete="username"
+          placeholder="acmefilms" autocapitalize="none" spellcheck="false"></label>
+      <label class="mini"><span>Password</span>
+        <input type="password" id="authPass" required
+          autocomplete="current-password" placeholder="••••••••"></label>
+      <button class="pill pill-dark" type="submit" id="authGo">Sign in</button>
+    </form>
+
+    <div class="err" id="authErr" hidden></div>
+    <p class="gatefoot">Trouble signing in? Ask Setara to reset your password.</p>
+  </div>
+</div>
 
 <div class="shell">
 
@@ -1371,27 +1603,42 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
         </div>
         <button class="pill pill-ghost pill-small" type="button" id="resetPlan"
           title="Restore every lever to its default">Reset</button>
+        <div class="menuwrap" id="acctWrap" hidden>
+          <button class="avatar" type="button" id="acctBtn"
+            aria-haspopup="true" aria-expanded="false" title="Account">
+            <span id="acctInitial" aria-hidden="true">&nbsp;</span></button>
+          <div class="menu" id="acctMenu" hidden>
+            <button type="button" id="signOutBtn"><b>Sign out</b>
+              <em id="acctEmail"></em></button>
+          </div>
+        </div>
+        <span class="syncdot" id="syncDot" hidden title="Saved"></span>
         <span class="counter" hidden>Bid <b id="topBid">—</b></span>
       </div>
       <div class="bubbles" id="leverBar"></div>
       </header>
       <div class="droptoast" id="dropToast" role="status" hidden></div>
-      <div class="emptygate" id="emptyGate" hidden>
+<div class="emptygate" id="emptyGate" hidden>
+        <div class="filmstrip" id="heroFilm" aria-hidden="true"></div>
+        <span class="eyebrow">Screenplay &rarr; bid, crew, schedule</span>
         <label class="bigdrop" id="bigDrop">
           <input type="file" id="bigFile"
             accept="application/pdf,.pdf,.fountain,.txt,.md,.fdx">
           <span class="art" aria-hidden="true">
             <svg viewBox="0 0 64 64"><path
               d="M14 6h24l12 12v40a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4Z"
-              fill="var(--md-primary)" opacity=".18"/><path d="M38 6l12 12H38V6Z"
-              fill="var(--md-primary)" opacity=".38"/><path
-              d="M32 46V28m0 0-7 7m7-7 7 7" fill="none" stroke="var(--md-primary)"
+              fill="currentColor" opacity=".16"/><path d="M38 6l12 12H38V6Z"
+              fill="currentColor" opacity=".42"/><path
+              d="M32 46V28m0 0-7 7m7-7 7 7" fill="none" stroke="currentColor"
               stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <span class="big">Drop the screenplay in</span>
-          <span class="sm">PDF, Fountain, .fdx or plain text</span>
-          <span class="pill pill-dark" aria-hidden="true">Choose a file</span>
+          <span class="sm">PDF, Fountain, .fdx or plain text. Setara reads it and
+            prices the job.</span>
+          <span class="pill" aria-hidden="true">Choose a file</span>
         </label>
+        <p class="herofoot">or <button type="button" class="linkbtn" id="useSample">see
+          it run on a sample script</button></p>
         <div class="err" id="gateErr" hidden></div>
       </div>
 
@@ -3324,8 +3571,12 @@ They stand there. The city gets louder.
    =========================================================================== */
 
 const state = {
-  scriptText: SAMPLE,
-  sourceName: "Sample script",
+  /* Empty on purpose. The first thing a new visitor should meet is the thing
+     they have to do - hand over a screenplay - not a worked example of someone
+     else's film wearing their production's name. The sample is still one click
+     away underneath the drop target. */
+  scriptText: "",
+  sourceName: "",
   view: "overview",
   customRates: {},
   teamRates: { "Team A": 3, "Team B": 3 },
@@ -3875,6 +4126,65 @@ function bindLevers() {
 }
 
 
+/* ---------------------------------------------------------------------------
+   The cinematic backdrop.
+
+   Two layers cross-fade, so at most two frames are decoded at a time, and the
+   one after next is fetched during the hold - fading into an image that has
+   not arrived reads as a flicker rather than a cut.
+
+   The order is shuffled per visit, so one still is not permanently the face of
+   the product. Reduced motion gets a single frame and no cycling; a hidden tab
+   holds where it is rather than burning through the reel unseen.
+   --------------------------------------------------------------------------- */
+const STILLS = Array.from({ length: 12 },
+  (_, i) => `stills/${String(i + 1).padStart(2, "0")}.webp`);
+
+function shuffled(list) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+const preload = (src) => new Promise((done) => {
+  const img = new Image();
+  img.onload = img.onerror = () => done();      // a missing still must not hang
+  img.src = src;
+});
+
+function filmstrip(host, hold = 7000) {
+  if (!host || host.dataset.running) return;    // idempotent: safe to re-call
+  host.dataset.running = "1";
+
+  const order = shuffled(STILLS);
+  const stillOnly = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const layers = [document.createElement("div"), document.createElement("div")];
+  for (const layer of layers) { layer.className = "frame"; host.appendChild(layer); }
+
+  let at = 0, front = 0;
+
+  async function show(index) {
+    const src = order[index % order.length];
+    await preload(src);
+    const next = layers[front ^ 1];
+    next.style.backgroundImage = `url("${src}")`;
+    next.classList.remove("drift");
+    void next.offsetWidth;                      // restart the drift from the top
+    if (!stillOnly) next.classList.add("drift");
+    next.classList.add("on");
+    layers[front].classList.remove("on");
+    front ^= 1;
+    preload(order[(index + 1) % order.length]);
+  }
+
+  show(at);
+  if (stillOnly) return;
+  setInterval(() => { if (!document.hidden) show(++at); }, hold);
+}
+
 /* One entry point: recost, repaint whichever view is showing. */
 /* With no script there is nothing to cost, so the whole screen becomes the
    uploader rather than showing a page of zeroes. */
@@ -3883,6 +4193,13 @@ function syncGate() {
   const gated = !parsed.scenes.length;
   document.body.classList.toggle("gated", gated);
   el("emptyGate").hidden = !gated;
+  /* Deferred, then re-checked: at boot the sign-in gate has not decided yet
+     whether it is going up, and starting the reel behind a screen nobody can
+     see would fetch stills for nothing. `filmstrip` is idempotent, so a call
+     that bails here is picked up by the next refresh after sign-in. */
+  if (gated) setTimeout(() => {
+    if (!document.body.classList.contains("locked")) filmstrip(el("heroFilm"));
+  }, 400);
   return gated;
 }
 
@@ -3955,6 +4272,7 @@ function refresh() {
   if (!restoring) {
     clearTimeout(pushTimer);
     pushTimer = setTimeout(historyPush, 400);
+    cloudQueue();
   }
   const est = render();
   syncGate();
@@ -4111,7 +4429,10 @@ function newProduction(name) {
 
 function switchProduction(id) {
   const current = activeProduction();
-  if (current) current.snap = snapshot();
+  if (current) {
+    current.snap = snapshot();
+    cloudSave();          // flush the one you are leaving before moving on
+  }
   const target = state.productions.find((p) => p.id === id);
   if (!target) return;
   state.activeProduction = id;
@@ -4272,7 +4593,8 @@ function deleteProduction(id) {
   /* Deleting one you are not looking at must not move you off the one you are,
      so only the active production forces a switch. */
   const wasActive = target === state.activeProduction;
-  state.productions.splice(index, 1);
+  const [gone] = state.productions.splice(index, 1);
+  if (gone && gone.row) cloudDelete(gone.row);
   if (!wasActive) { renderProductions(); return refresh(); }
   const next = state.productions[Math.max(0, index - 1)];
   state.activeProduction = null;
@@ -4305,6 +4627,7 @@ function commitRename() {
   if (production && name && name !== production.name) {
     production.name = name;
     production.renamed = true;
+    cloudQueue();
   }
   cancelRename();
 }
@@ -5120,6 +5443,17 @@ function bind() {
     e.target.value = "";        // so picking the SAME file again still fires
     ingest(file);
   });
+  /* Nothing starts on the sample any more, so there has to be a way back to
+     it - otherwise the only way to see the tool work is to own a screenplay.
+     It sits outside the <label>, so this click cannot open the file dialog. */
+  el("useSample").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    state.scriptText = SAMPLE;
+    showSource("Sample script");
+    nameFromScript("Sample script");
+    refresh();
+  });
   /* Drag and drop.
 
      What was broken: `dragover` only called preventDefault() when a file sniff
@@ -5378,6 +5712,226 @@ function bind() {
 
 }
 
+
+/* ===========================================================================
+   Accounts and sync.
+
+   The app kept everything in memory, so a reload wiped it. This gives each
+   sign-in its own set of productions, stored in Postgres.
+
+   Two things make it small. `snapshot()` / `restore()` already define what a
+   production IS - they are what the picker switches between - so a row is just
+   a snapshot with a name on it. And Postgres enforces ownership itself through
+   Row Level Security, so there is no server to write: the browser talks to the
+   database directly and the database refuses to hand over anyone else's rows.
+
+   If the library fails to load the app still runs, just without sync.
+   ======================================================================== */
+const SUPABASE_URL = "https://vpxpuubbndamhwjrwpnx.supabase.co";
+/* Publishable by design: it carries the `anon` role, which is granted nothing.
+   Every row it can reach is decided by the policies, against the signed-in
+   user. The key that must never appear here is `service_role`. */
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZweHB1dWJibmRhbWh3anJ3cG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NjI5OTIsImV4cCI6MjEwNDAzODk5Mn0.v2tnVP-bzZ3AQk1nXLIC6st_couRUISi5eWv85bMtJg";
+/* Usernames are mapped onto addresses in this domain. It never receives mail -
+   it exists only because Supabase keys users by email. */
+const ACCOUNT_DOMAIN = "users.setara.ai";
+
+const emailFor = (username) =>
+  `${String(username).trim().toLowerCase().replace(/\s+/g, "")}@${ACCOUNT_DOMAIN}`;
+const usernameFrom = (email) => String(email || "").split("@")[0];
+
+let sb = null, account = null, cloudTimer = null, pulling = false;
+
+const cloudReady = () => Boolean(sb);
+
+function initCloud() {
+  if (!window.supabase || !window.supabase.createClient) return false;
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { persistSession: true, autoRefreshToken: true },
+  });
+  return true;
+}
+
+/* --- the gate ----------------------------------------------------------- */
+function showGate(show) {
+  const gate = el("authGate");
+  if (gate) gate.hidden = !show;
+  document.body.classList.toggle("locked", show);
+  if (show) filmstrip(el("gateFilm"));
+}
+
+function authError(message) {
+  const box = el("authErr");
+  if (!box) return;
+  box.hidden = !message;
+  box.textContent = message || "";
+}
+
+function setAccount(user) {
+  account = user;
+  const wrap = el("acctWrap");
+  if (wrap) wrap.hidden = !user;
+  const who = el("acctEmail");
+  if (who) who.textContent = user ? usernameFrom(user.email) : "";
+  const initial = el("acctInitial");
+  const name = user ? usernameFrom(user.email) : "";
+  if (initial) initial.textContent = name ? name[0] : "\u00A0";
+  const btn = el("acctBtn");
+  if (btn && name) btn.title = `Signed in as ${name}`;
+}
+
+/* --- rows <-> productions ------------------------------------------------
+   A row carries the snapshot; the in-memory production carries a `row` id so a
+   later save knows which row to update rather than making a second one. */
+function productionFromRow(row) {
+  return { id: `prod_${state.nextProductionId++}`, name: row.name,
+           snap: row.snapshot, row: row.id };
+}
+
+async function pullProductions() {
+  if (!cloudReady() || !account) return;
+  pulling = true;
+  try {
+    const { data, error } = await sb.from("productions")
+      .select("id,name,snapshot,updated_at")
+      .order("updated_at", { ascending: false });
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      /* A new account starts where a new visitor does - on the uploader - and
+         that first production is written straight away so the account is never
+         empty on the server. */
+      state.productions = [];
+      state.activeProduction = null;
+      state.scriptText = "";
+      showSource("");
+      const id = newProduction("Untitled production 1");
+      state.activeProduction = id;
+      activeProduction().snap = snapshot();
+      renderProductions();
+      buildSelects(); buildRoster(); buildLevers(); refresh();
+      pulling = false;
+      return cloudSave(true);
+    }
+
+    state.productions = data.map(productionFromRow);
+    state.activeProduction = null;
+    switchProduction(state.productions[0].id);
+  } catch (err) {
+    syncMark("failed");
+    console.error("could not load productions:", err);
+  } finally {
+    pulling = false;
+  }
+}
+
+function syncMark(kind) {
+  const dot = el("syncDot");
+  if (!dot) return;
+  dot.hidden = !account;
+  dot.className = "syncdot " + kind;
+  dot.title = kind === "saving" ? "Saving…" : kind === "saved" ? "Saved" : "Not saved";
+}
+
+/* Saves the production you are LOOKING at, with the live state - the others
+   are already on the server and unchanged. */
+async function cloudSave(immediate) {
+  if (!cloudReady() || !account || pulling) return;
+  const production = activeProduction();
+  if (!production) return;
+  syncMark("saving");
+  try {
+    const payload = { user_id: account.id, name: production.name,
+                      snapshot: snapshot() };
+    if (production.row) {
+      const { error } = await sb.from("productions")
+        .update(payload).eq("id", production.row);
+      if (error) throw error;
+    } else {
+      const { data, error } = await sb.from("productions")
+        .insert(payload).select("id").single();
+      if (error) throw error;
+      production.row = data.id;      // so the next save updates, not duplicates
+    }
+    syncMark("saved");
+  } catch (err) {
+    syncMark("failed");
+    console.error("could not save:", err);
+  }
+}
+
+/* Debounced, so dragging a slider writes once when you let go rather than on
+   every frame. */
+function cloudQueue() {
+  if (!cloudReady() || !account || pulling) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(() => cloudSave(), 900);
+}
+
+async function cloudDelete(rowId) {
+  if (!cloudReady() || !account || !rowId) return;
+  try {
+    const { error } = await sb.from("productions").delete().eq("id", rowId);
+    if (error) throw error;
+  } catch (err) { console.error("could not delete:", err); }
+}
+
+/* --- wiring ------------------------------------------------------------- */
+async function bindAuth() {
+  if (!initCloud()) {          // CDN blocked or offline: run local-only
+    showGate(false);
+    return;
+  }
+
+  const form = el("authForm");
+  if (form) form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    authError("");
+    const go = el("authGo");
+    go.disabled = true; go.textContent = "Signing in…";
+    const { error } = await sb.auth.signInWithPassword({
+      email: emailFor(el("authUser").value),
+      password: el("authPass").value,
+    });
+    go.disabled = false; go.textContent = "Sign in";
+    if (error) {
+      authError(/invalid/i.test(error.message)
+        ? "That username and password did not match. Check both, or ask Setara to reset it."
+        : error.message);
+    }
+  });
+
+  const acct = el("acctBtn"), menu = el("acctMenu");
+  if (acct) {
+    acct.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.hidden = !menu.hidden;
+      acct.setAttribute("aria-expanded", String(!menu.hidden));
+    });
+    document.addEventListener("click", (e) => {
+      if (!menu.hidden && !menu.contains(e.target)) menu.hidden = true;
+    });
+  }
+  const out = el("signOutBtn");
+  if (out) out.addEventListener("click", async () => {
+    await sb.auth.signOut();
+    location.reload();          // cleanest way to leave nothing behind
+  });
+
+  /* Fires on load with an existing session too, so a returning visitor is
+     signed in without touching the form. */
+  sb.auth.onAuthStateChange((_event, session) => {
+    const user = session ? session.user : null;
+    setAccount(user);
+    showGate(!user);
+    syncMark("saved");
+    if (user) pullProductions();
+  });
+
+  const { data } = await sb.auth.getSession();
+  if (!data || !data.session) showGate(true);
+}
+
 buildSelects();
 refreshDropdowns();
 buildRoster();
@@ -5385,11 +5939,12 @@ bind();
 bindLevers();
   bindExports();
 bindProductions();
-showSource("Sample script");
-state.activeProduction = newProduction("Sample script");
+showSource("");
+state.activeProduction = newProduction("Untitled production 1");
 activeProduction().snap = snapshot();
 renderProductions();
 buildLevers();
 refresh();
 historyPush();          // the state you started from is the floor of the stack
+bindAuth();             // gate goes up if there is no session
 </script>

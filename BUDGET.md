@@ -647,6 +647,33 @@ drive it unchanged.
 Only APPROVED assets are ever pushed. Work folders stay local, so a link you send is always
 a locked version.
 
+## The web app: two front doors
+
+`web/index.html` is the whole product — one file, no build step, deployed from
+`web/` to Vercel at **budget.setara.ai**. Two screens come before the budget:
+
+**The sign-in gate.** Username and password, not email. Supabase identifies
+users by email address, so the username is mapped to `<name>@users.setara.ai`
+before it is sent; a client types `acmefilms` and never sees an address, and
+nothing is ever emailed. There is no self-service reset — you reset it in the
+Supabase dashboard, which for a handful of clients keeps you in control of who
+has access. Accounts are created by hand: **Authentication → Users → Add user**,
+with **Auto Confirm User** ticked (no mailbox exists to confirm from).
+
+Signed out, the app is not merely hidden — row-level security means the database
+refuses the request too. If the Supabase CDN is blocked the app still runs, just
+without sync, rather than showing a blank page.
+
+**The landing screen.** No script means nothing to cost, so a new visitor lands
+on the uploader, not on a worked example wearing their production's name. The
+sample is one click away underneath the drop target.
+
+Both screens are full-bleed film: twelve stills in `web/stills/`, cross-faded
+two layers at a time so only two frames are ever decoded at once, shuffled per
+visit, and held on a hidden tab. Every rule that dresses the app for film is
+scoped to `body.gated` or `.gate`, so the moment a screenplay lands the app is
+exactly the app again.
+
 ## Not built yet
 
 - PDF screenplay parsing (Fountain, .fdx, .txt and .md work).
