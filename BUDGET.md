@@ -664,6 +664,17 @@ Signed out, the app is not merely hidden — row-level security means the databa
 refuses the request too. If the Supabase CDN is blocked the app still runs, just
 without sync, rather than showing a blank page.
 
+The gate is **visible in the markup**, so signed out it is the thing that paints
+rather than the thing that wins a race. A returning visitor is spared the
+opposite flash by a parse-time script that recognises Supabase's stored session
+key — a paint decision only, never trusted: the token is still verified over the
+network and an expired one puts the gate straight back up.
+
+`supabase/schema.sql` holds the tables, the trigger and every RLS policy. It is
+idempotent, so it can be run against the live project safely. Admins (rows in
+`public.admins`) may **read** every production; write policies stay owner-only,
+so oversight can never quietly alter somebody's bid.
+
 **The landing screen.** Every session opens here — signing in is the start of a
 job, and the job starts with a screenplay, so the app never reopens on the
 budget it happened to close on. The active production at sign-in is a fresh
