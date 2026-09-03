@@ -781,8 +781,11 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
 .gatecard .err{margin:0;color:#FFE2DE;background:rgba(179,38,30,.3);
   border:1px solid rgba(255,150,140,.34)}
 .gatefoot{font-size:.75rem;line-height:1.5;color:rgba(244,241,236,.55)}
-/* The page behind the gate must not scroll or be reachable by tab. */
+/* The page behind the gate must not scroll or be reachable by tab. `pregate`
+   is the same thing for the window between first paint and boot, when the
+   class on <body> has not been set yet. */
 body.locked{overflow:hidden}
+html.pregate,html.pregate body{overflow:hidden}
 
 /* A quiet dot rather than a "Saved!" toast - it is reassurance, not news. */
 .syncdot{width:7px;height:7px;flex:none;border-radius:var(--r-full);
@@ -1546,7 +1549,7 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
      The trade is that there is no self-service password reset - you reset it
      for them in the Supabase dashboard, which for a handful of clients is
      better anyway, since it keeps you in control of who has access. -->
-<div class="gate" id="authGate" hidden>
+<div class="gate" id="authGate">
   <div class="filmstrip" id="gateFilm" aria-hidden="true"></div>
   <div class="gatecard">
     <span class="brand"><i class="mark" aria-hidden="true"></i>
@@ -1567,6 +1570,37 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
     <p class="gatefoot">Trouble signing in? Ask Setara to reset your password.</p>
   </div>
 </div>
+
+<script>
+/* Runs during parse, before the first paint, and it settles which of the two
+   front doors is the one that PAINTS - rather than letting them race.
+
+   The gate is visible in the markup, so signed out you meet the login and
+   nothing else. Before this, the gate was hidden and only raised once
+   getSession() resolved: the app painted first and the login dropped over it a
+   moment later, which read as upload -> login -> budget.
+
+   Supabase keeps its session in localStorage under sb-<ref>-auth-token, so a
+   returning visitor can be recognised synchronously and spared the reverse
+   flash of a login screen they do not need. This is a paint decision only -
+   nothing is trusted to it. The token is still verified over the network, and
+   if it has expired the gate goes straight back up. */
+(function () {
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key && /^sb-.+-auth-token$/.test(key) && localStorage.getItem(key)) {
+        document.getElementById("authGate").hidden = true;
+        return;
+      }
+    }
+  } catch (err) {
+    /* Private mode can throw on localStorage. Falling through leaves the gate
+       up, which is the safe way to be wrong. */
+  }
+  document.documentElement.classList.add("pregate");
+})();
+</script>
 
 <div class="shell">
 
@@ -5808,6 +5842,8 @@ function showGate(show) {
   const gate = el("authGate");
   if (gate) gate.hidden = !show;
   document.body.classList.toggle("locked", show);
+  /* The pre-paint lock hands over to the real one here, and never comes back. */
+  document.documentElement.classList.remove("pregate");
   if (show) filmstrip(el("gateFilm"));
 }
 
@@ -5993,5 +6029,8 @@ renderProductions();
 buildLevers();
 refresh();
 historyPush();          // the state you started from is the floor of the stack
-bindAuth();             // gate goes up if there is no session
+/* The markup already decided this; showGate is called so the rest of it -
+   the body lock, the film - matches what is on screen. */
+if (!el("authGate").hidden) showGate(true);
+bindAuth();             // and the session, once verified, settles it for real
 </script>
