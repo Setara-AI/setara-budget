@@ -730,9 +730,15 @@ request. Admins can **read** a client's document and cannot replace it.
 
 The upload happens *after* the estimate renders and is entirely best-effort: the
 bid comes from text already in hand, so it never waits on the network, and a
-failed upload costs a stored file rather than a budget. A production whose
-original was not stored says so on the provenance line instead of looking
-identical to one where the file is safe.
+failed upload costs a stored file rather than a budget.
+
+None of that is narrated on screen. The provenance line names the document and,
+when there is a copy, offers it back — it never reports on the storage itself.
+Absence is not mentioned at all: an early production, or one whose upload quietly
+failed, has a perfectly good budget, and a note about missing plumbing reads as a
+warning about work that is fine. Failures go to the console, where they are
+something to debug rather than something to worry a producer mid-sentence. The
+sync indicator in the header is gone for the same reason.
 
 `supabase/schema.sql` holds the tables, the trigger, the bucket and every RLS policy. It is
 idempotent, so it can be run against the live project safely. Admins (rows in

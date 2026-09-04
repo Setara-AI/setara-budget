@@ -823,13 +823,6 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
 body.locked{overflow:hidden}
 html.pregate,html.pregate body{overflow:hidden}
 
-/* A quiet dot rather than a "Saved!" toast - it is reassurance, not news. */
-.syncdot{width:7px;height:7px;flex:none;border-radius:var(--r-full);
-  background:var(--md-outline-variant);transition:background var(--std) var(--ease)}
-.syncdot[hidden]{display:none}
-.syncdot.saving{background:var(--md-primary)}
-.syncdot.saved{background:#3f7d54}
-.syncdot.failed{background:var(--md-error,#B3261E)}
 .linkbtn{border:0;background:none;color:var(--md-primary);cursor:pointer;
   font:inherit;font-size:.8125rem;padding:4px;text-decoration:underline}
 
@@ -967,7 +960,6 @@ html.pregate,html.pregate body{overflow:hidden}
 .srcline .dl:hover{background:color-mix(in srgb,var(--md-primary) 12%,transparent)}
 .srcline .dl svg{width:13px;height:13px}
 .srcline .dl[disabled]{opacity:.5;cursor:default;background:none}
-.srcline .nofile{font-size:.75rem;color:var(--md-outline)}
 @media(max-width:620px){.srcline{margin-top:8px;font-size:12px}
   .srcline .dl{font-size:12px;min-height:32px}}
 
@@ -1749,7 +1741,6 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
               <em id="acctEmail"></em></button>
           </div>
         </div>
-        <span class="syncdot" id="syncDot" hidden title="Saved"></span>
         <span class="counter" hidden>Bid <b id="topBid">—</b></span>
       </div>
       <div class="bubbles" id="leverBar"></div>
@@ -4644,6 +4635,15 @@ function renderSource() {
     return;
   }
   line.hidden = false;
+  /* The line names the document and, when the original is there, offers it
+     back. What it never does is report on the storage itself.
+
+     It used to say "original not stored" when there was no file. That is the
+     app talking about its own plumbing to someone who came here to price a
+     film - and on the productions that predate storage, or where an upload
+     quietly failed, it read as a warning about work that is in fact perfectly
+     fine. Absence is simply not mentioned now: either there is a copy to hand
+     back or there is nothing to say. */
   const kind = state.sourceKind === "outline" ? "Outline" : "Screenplay";
   line.innerHTML = `<span class="k">${kind}</span><b>${esc(name)}</b>`
     + (state.sourceFile
@@ -4652,10 +4652,7 @@ function renderSource() {
              d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M4 15.5h12" fill="none"
              stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
              stroke-linejoin="round"/></svg>Original</button>`
-      /* Said out loud rather than left blank. A production whose original was
-         never stored - dropped before this existed, or an upload that failed -
-         should not look identical to one where the file is safe. */
-      : `<span class="nofile">&mdash; original not stored</span>`);
+      : "");
   const button = el("srcDownload");
   if (button) button.addEventListener("click", async () => {
     button.disabled = true;
@@ -6440,13 +6437,11 @@ async function pullProductions() {
   }
 }
 
-function syncMark(kind) {
-  const dot = el("syncDot");
-  if (!dot) return;
-  dot.hidden = !account;
-  dot.className = "syncdot " + kind;
-  dot.title = kind === "saving" ? "Saving…" : kind === "saved" ? "Saved" : "Not saved";
-}
+/* Saving used to show a coloured dot in the header. It is gone: the sync is
+   the app's business, not something to narrate at the producer while they
+   work. A failure still reaches the console, where it is a thing to debug
+   rather than a thing to worry about mid-sentence. */
+function syncMark(_kind) {}
 
 /* Saves the production you are LOOKING at, with the live state - the others
    are already on the server and unchanged. */
