@@ -120,7 +120,7 @@ create policy "delete own productions" on public.productions
 --    case-insensitive because the address you type is rarely the case it was
 --    stored in.
 -- insert into public.admins (user_id)
--- select id from auth.users where lower(email) = lower('matt@users.setara.ai')
+-- select id from auth.users where lower(email) = lower('admin@users.setara.ai')
 -- on conflict (user_id) do nothing;
 
 -- 3. Confirm it took. Zero rows back means step 2 matched no account - almost
@@ -130,7 +130,7 @@ create policy "delete own productions" on public.productions
 
 -- To demote:
 -- delete from public.admins
---  where user_id = (select id from auth.users where lower(email) = lower('matt@users.setara.ai'));
+--  where user_id = (select id from auth.users where lower(email) = lower('admin@users.setara.ai'));
 
 -- --------------------------------------------------------------------------
 -- The original screenplay files live in Storage, and their setup is in its own
