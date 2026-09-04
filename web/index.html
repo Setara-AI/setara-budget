@@ -1019,12 +1019,16 @@ html.pregate,html.pregate body{overflow:hidden}
 
 .bubbles{display:grid;gap:10px;margin-top:12px;
   grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
-.bubbles .cell{display:flex;flex-direction:column;gap:5px;
+.bubbles .cell{position:relative;display:flex;flex-direction:column;gap:5px;
   background:var(--md-surface-container);border-radius:var(--r-lg);box-shadow:var(--e1);
   padding:11px 15px 13px;
   transition:box-shadow var(--std) var(--ease),transform var(--std) var(--ease)}
 .bubbles .cell:hover{box-shadow:var(--e2);transform:translateY(-1px)}
-.bubbles .cell .v{font-size:1.3125rem;font-weight:400;letter-spacing:-.025em;line-height:1.05}
+/* A figure never wraps. "80 min" breaking after the number cost the row its
+   second line, which is what made the runtime bubble taller than the two
+   beside it even after the label was dealt with. */
+.bubbles .cell .v{font-size:1.3125rem;font-weight:400;letter-spacing:-.025em;
+  line-height:1.05;white-space:nowrap}
 /* The value and its pencil share a row so the pencil cannot push the number
    off its baseline; the pencil only appears on hover, because five of the six
    bubbles have nothing to edit and a permanent icon would imply they do.
@@ -1045,7 +1049,8 @@ html.pregate,html.pregate body{overflow:hidden}
    it being obvious why. The distinction is carried by the label instead, which
    says "Runtime · stated" in words, and by the pencil staying visible rather
    than waiting for a hover. */
-.bubbles .cell.stated .ratepen{opacity:1}
+.bubbles .cell.stated .ratepen{opacity:1;color:var(--md-primary)}
+.statedtag{font-style:normal}
 /* What this bid was made from. One quiet line - it is provenance, not a
    headline - and the filename becomes a download once the original is stored. */
 .srcline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
@@ -1690,6 +1695,18 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
   .recents .rlabel{font-size:11px;letter-spacing:.13em}
   .rchip{font-size:13px;min-height:38px;max-width:18ch}
   .avatar{width:36px;height:36px;font-size:14px}
+
+  /* The 40px touch target below is meant for the crew list's rate pencils. On
+     a bubble it did two things wrong: it set the row's height - 40px against
+     the other bubbles' 22 - and it took a third of the width, which wrapped
+     "80 min" onto two lines. Out of the flow entirely, in the corner the label
+     leaves free: the figure gets the full width, the row is 22px like the
+     others, and the target stays a comfortable 32. */
+  .bubbles .cell .ratepen{position:absolute;top:6px;right:6px;
+    width:32px;height:32px;margin:0}
+  /* Two words do not fit a third of a phone. The persistent, accented pencil
+     says the same thing in the space available. */
+  .statedtag{display:none}
 
   .gate{padding:16px max(16px,env(safe-area-inset-left))}
   .gatecard{padding:26px 22px 22px;gap:16px}
@@ -4480,7 +4497,12 @@ function syncLevers(est) {
   if (cell) {
     const stated = state.runtimeOverride > 0;
     cell.classList.toggle("stated", stated);
-    cell.querySelector(".kick-sm").textContent = stated ? "Runtime · stated" : "Runtime";
+    /* The qualifier is its own element so a narrow screen can drop it. Left in
+       the label it wrapped to a second line at phone widths, and since the
+       bubbles are a grid, one two-line label stretched all three cells - which
+       is most of why the row stopped looking uniform. */
+    cell.querySelector(".kick-sm").innerHTML = stated
+      ? 'Runtime<em class="statedtag"> · stated</em>' : "Runtime";
   }
 }
 
