@@ -6575,7 +6575,17 @@ async function originalLink(path) {
 const touched = new Set();
 const touch = (name) => touched.add(name);
 
-const EVENT_MIN_GAP = 30000;      // ms between 'change' rows
+/* Half a minute was too coarse. Someone exploring a budget moves a lever,
+   reads the number, moves another - and a thirty-second floor recorded that as
+   one row, or none at all, so the trail said "they uploaded and then exported"
+   about a session that was nothing of the sort.
+
+   Eight seconds still cannot flood: a change row is only written after a save,
+   and saves are themselves debounced to 900ms, so the ceiling is a handful of
+   rows a minute from someone working hard. The move threshold is what keeps
+   the noise out - a lever that does not shift the bid never writes a row
+   however often it is dragged. */
+const EVENT_MIN_GAP = 8000;       // ms between 'change' rows
 const EVENT_MIN_MOVE = 0.005;     // and the bid has to have moved this much
 let lastEvent = { at: 0, bid: null };
 

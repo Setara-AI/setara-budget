@@ -778,8 +778,10 @@ is a query rather than something nobody can ever know. Set it up with
 
 **Sampling is the whole design problem.** Dragging a slider recomputes on every
 frame, and a row per frame is not a trail — it is noise that hides one. A
-`change` is recorded only when **both** are true: thirty seconds have passed
-*and* the bid moved more than half a percent. `upload` and `export` are never
+`change` is recorded only when **both** are true: eight seconds have passed *and*
+the bid moved more than half a percent. The move threshold is what keeps the
+noise out — a lever that does not shift the bid never writes a row however often
+it is dragged — so the gap only has to stop a burst, not do the filtering. `upload` and `export` are never
 sampled; they are decisions rather than exploration, and an export is the moment
 a number left the building and became something a client was actually shown.
 
