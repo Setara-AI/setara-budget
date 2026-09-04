@@ -557,7 +557,11 @@ looks measured and is not.
 A banner used to spell this out above the budget; it was removed as noise. The
 signal that survives is the one that matters — the Runtime tile reads
 **"Runtime · stated"** whenever the figure was typed rather than measured, so a
-stated runtime can never be mistaken for one the tool worked out.
+stated runtime can never be mistaken for one the tool worked out. In words, and
+with the pencil left visible: the figure itself keeps exactly the type every
+other bubble uses. It was painted in the brand purple at first, and at that size
+a colour shift reads as a different *font* rather than as a flag — the row
+stopped looking uniform without it being obvious why.
 
 This lands softly because of what drives the bid. Labour and video generation are
 both functions of runtime — which is *stated*, so it is exactly as firm as it

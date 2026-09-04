@@ -1038,8 +1038,14 @@ html.pregate,html.pregate body{overflow:hidden}
 .bubbles .cell .ratepen{opacity:0;transition:opacity var(--fast) var(--ease),
   color var(--fast) var(--ease),background var(--fast) var(--ease)}
 .bubbles .cell:hover .ratepen,.bubbles .cell .ratepen:focus-visible{opacity:1}
-.bubbles .cell.stated .ratepen{opacity:1;color:var(--md-primary)}
-.bubbles .cell.stated .v{color:var(--md-primary)}
+/* A stated runtime keeps the same type as every other bubble - same face, size,
+   weight and tracking, and now the same colour too. It was painted in the brand
+   purple to mark it as different, and at this size a colour shift reads as a
+   different FONT rather than as a flag: the row stopped looking uniform without
+   it being obvious why. The distinction is carried by the label instead, which
+   says "Runtime · stated" in words, and by the pencil staying visible rather
+   than waiting for a hover. */
+.bubbles .cell.stated .ratepen{opacity:1}
 /* What this bid was made from. One quiet line - it is provenance, not a
    headline - and the filename becomes a download once the original is stored. */
 .srcline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
