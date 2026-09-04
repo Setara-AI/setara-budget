@@ -111,48 +111,13 @@ create policy "delete own productions" on public.productions
 -- on conflict (user_id) do nothing;
 
 -- --------------------------------------------------------------------------
--- The original documents.
---
--- The app converts a screenplay to text in the BROWSER and only the text is
--- needed to produce a bid, so keeping the file itself is a deliberate extra:
--- it is the exact document a bid was made against, which is the thing you
--- would want in your hand if a number is ever disputed.
---
--- Private bucket. Nothing here is servable by URL - reading a file means asking
--- for a short-lived signed link, and only the owner or an admin may ask.
---
--- The first path segment is the owner's user id, and that is what every policy
--- below keys on: storage.foldername(name)[1]. A file is therefore reachable by
--- the account that put it there, and by an admin, and by nobody else.
+-- The original screenplay files live in Storage, and their setup is in its own
+-- file: supabase/storage.sql. It is separate because creating a policy on
+-- storage.objects can be refused depending on the project (that table is owned
+-- by supabase_storage_admin), and when it is, it aborts the rest of the run -
+-- which is exactly how the bucket came to be missing while everything above it
+-- had been created. Run this file first, then that one.
 -- --------------------------------------------------------------------------
-insert into storage.buckets (id, name, public, file_size_limit)
-values ('scripts', 'scripts', false, 26214400)      -- 25 MB; a script PDF is 1-6
-on conflict (id) do update
-  set public = false, file_size_limit = excluded.file_size_limit;
-
-drop policy if exists "read own scripts"   on storage.objects;
-drop policy if exists "write own scripts"  on storage.objects;
-drop policy if exists "delete own scripts" on storage.objects;
-
--- Read: your own, plus everything if you are an admin - the same rule the
--- productions table uses, so the file and the budget never disagree about who
--- may see them.
-create policy "read own scripts" on storage.objects
-  for select to authenticated
-  using (bucket_id = 'scripts'
-         and ((storage.foldername(name))[1] = auth.uid()::text or public.is_admin()));
-
--- Write and delete: yours alone, admin or not. An admin can read the document a
--- client bid against; an admin cannot replace it with a different one.
-create policy "write own scripts" on storage.objects
-  for insert to authenticated
-  with check (bucket_id = 'scripts'
-              and (storage.foldername(name))[1] = auth.uid()::text);
-
-create policy "delete own scripts" on storage.objects
-  for delete to authenticated
-  using (bucket_id = 'scripts'
-         and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ===========================================================================
 -- CHECK IT WORKED. Run this block after the one above; it changes nothing.
