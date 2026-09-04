@@ -4394,6 +4394,7 @@ function bindRuntimePen() {
        script that is the page curve; for an outline there is nothing to fall
        back to, so the landing screen asks the question again - which is the
        honest outcome, not a regression. */
+    touch(raw ? "runtime:stated" : "runtime:cleared");
     if (!raw) state.runtimeOverride = null;
     else if (minutes > 0 && minutes <= 600) state.runtimeOverride = minutes;
     close();
@@ -4476,6 +4477,7 @@ function bindLevers() {
     if (!lever) return;
     const def = leverDefault(lever);
     if (def === null) return;
+    touch(`${lever.id}:reset`);
     lever.set(def);
     const input = document.getElementById(`lv_${lever.id}`);
     if (input) input.value = def;
@@ -4486,6 +4488,7 @@ function bindLevers() {
     const wrap = e.target.closest("[data-lever]");
     if (wrap) {
       const id = wrap.dataset.lever;
+      touch(id);
       const lever = LEVER_GROUPS.flatMap((g) => g.levers).find((l) => l.id === id);
       const value = parseFloat(e.target.value);
       lever.set(value);
@@ -4523,8 +4526,8 @@ function bindLevers() {
   });
 
   grid.addEventListener("change", (e) => {
-    if (e.target.name === "videoTier") { state.videoModel = e.target.value; buildLevers(); refresh(); }
-    if (e.target.name === "imageTier") { state.imageModel = e.target.value; buildLevers(); refresh(); }
+    if (e.target.name === "videoTier") { touch("videoTier"); state.videoModel = e.target.value; buildLevers(); refresh(); }
+    if (e.target.name === "imageTier") { touch("imageTier"); state.imageModel = e.target.value; buildLevers(); refresh(); }
     el("videoModel").value = state.videoModel;
     el("imageModel").value = state.imageModel;
   });
@@ -6134,6 +6137,7 @@ function bind() {
     switchProduction(id);        // lands on the upload gate, script empty
   });
   el("videoModel").addEventListener("change", (e) => {
+    touch("videoModel");
     const tiers = (VIDEO_FAMILIES[e.target.value] || { tiers: [] }).tiers;
     if (tiers.length) state.videoModel = tiers[0].id;      // keep a valid tier selected
     buildSelects();
@@ -6145,6 +6149,7 @@ function bind() {
     refresh();
   });
   el("imageModel").addEventListener("change", (e) => {
+    touch("imageModel");
     state.imageModel = e.target.value;
     buildSelects();
     refresh();
@@ -6560,6 +6565,16 @@ async function originalLink(path) {
 
    Best-effort throughout. A trail is worth having; it is not worth failing a
    budget for, so every error stops here. */
+/* Which controls were actually TOUCHED since the last row.
+
+   The lever values are already copied into every event, so a diff of two rows
+   shows what ended up different. That is not the same question as what someone
+   was playing with: a slider pushed to 12 and back to 3 leaves no trace in the
+   values, and it is often the most interesting thing they did. This records the
+   reaching, not just the landing. */
+const touched = new Set();
+const touch = (name) => touched.add(name);
+
 const EVENT_MIN_GAP = 30000;      // ms between 'change' rows
 const EVENT_MIN_MOVE = 0.005;     // and the bid has to have moved this much
 let lastEvent = { at: 0, bid: null };
@@ -6597,6 +6612,7 @@ async function recordEvent(kind) {
       /* A bid is only meaningful beside the assumptions that produced it, and
          those change - a row that had to look them up later would report
          today's levers against last week's number. */
+      touched: [...touched],
       levers: {
         source: state.sourceKind,
         runtimeStated: state.runtimeOverride || null,
@@ -6611,6 +6627,7 @@ async function recordEvent(kind) {
       },
     });
     if (error) throw error;
+    touched.clear();          // only once it is safely on the server
   } catch (err) {
     console.error("could not record the event:", err);
   }

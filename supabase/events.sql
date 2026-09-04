@@ -38,8 +38,20 @@ create table if not exists public.production_events (
   weeks            numeric,
 
   -- and why it was that, so a jump has an explanation next to it
-  levers           jsonb
+  levers           jsonb,
+
+  -- which controls were actually reached for since the previous row. The lever
+  -- VALUES above already show what ended up different; this shows what someone
+  -- was playing with, which is not the same question - a slider pushed to 12
+  -- and back to 3 leaves no trace in the values and is often the most
+  -- interesting thing they did.
+  touched          text[]
 );
+
+-- `create table if not exists` does nothing to a table that already exists, so
+-- this is how the column reaches anyone who ran an earlier version of this
+-- file. Re-running the whole thing is safe either way.
+alter table public.production_events add column if not exists touched text[];
 
 create index if not exists production_events_user_at_idx
   on public.production_events (user_id, at desc);
@@ -90,6 +102,39 @@ create policy "read own events" on public.production_events
 --   from public.production_events e join auth.users u on u.id = e.user_id
 --  group by u.email, e.production_name
 --  order by max(e.at) desc;
+
+-- WHICH SLIDERS THEY ARE PLAYING WITH. Most-reached-for first.
+-- select unnest(e.touched) as control, count(*) as times,
+--        count(distinct e.user_id) as clients
+--   from public.production_events e
+--  where e.touched is not null and cardinality(e.touched) > 0
+--  group by 1 order by times desc;
+
+-- The same, per client.
+-- select u.email as client, unnest(e.touched) as control, count(*) as times
+--   from public.production_events e join auth.users u on u.id = e.user_id
+--  where cardinality(e.touched) > 0
+--  group by 1, 2 order by client, times desc;
+
+-- A SESSION, READ AS A STORY: every move, what it did to the bid, and which
+-- levers actually changed value between one row and the next.
+-- with rows as (
+--   select e.*, u.email,
+--          lag(e.bid)    over w as prev_bid,
+--          lag(e.levers) over w as prev_levers
+--     from public.production_events e
+--     join auth.users u on u.id = e.user_id
+--   window w as (partition by e.user_id, e.production_name order by e.at)
+-- )
+-- select email, production_name, at, kind,
+--        round(bid) as bid,
+--        round(bid - prev_bid) as moved_by,
+--        touched as reached_for,
+--        (select jsonb_object_agg(k, jsonb_build_array(prev_levers -> k, levers -> k))
+--           from jsonb_object_keys(levers) k
+--          where levers -> k is distinct from prev_levers -> k) as changed
+--   from rows
+--  order by at desc limit 200;
 
 -- How busy it has been, by day.
 -- select date_trunc('day', at) as day, count(*) filter (where kind = 'upload') as uploads,
