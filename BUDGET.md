@@ -745,6 +745,17 @@ idempotent, so it can be run against the live project safely. Admins (rows in
 `public.admins`) may **read** every production; write policies stay owner-only,
 so oversight can never quietly alter somebody's bid.
 
+**The loading screen.** Between the two there is a wait, and it used to be
+filled with the wrong thing: signed in, the productions are still arriving and
+the app is briefly empty — and an empty app *is* the upload screen, so you were
+shown "drop a screenplay in" for a moment before your own work replaced it. That
+reads as the app losing a production and then finding it again. The mark now
+breathes on the sign-in screen's own dark, with the word underneath, from the
+first paint until the data lands. It also covers reading a PDF, which on a
+feature takes a few seconds. Every exit routes through one function, including
+the failures, and a 12-second ceiling means a hung request ends with a usable
+app rather than a loader that spins for ever.
+
 **The landing screen.** Signing in lands you where your work is: with a saved
 production you go straight back into it, most recently touched first, and only
 an account with nothing saved meets the uploader. The blank made for that second
