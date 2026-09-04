@@ -103,12 +103,34 @@ create policy "delete own productions" on public.productions
   using (user_id = auth.uid());
 
 -- --------------------------------------------------------------------------
--- Make yourself an admin. Change the address to your own account first; it is
--- the one you created under Authentication -> Users.
--- --------------------------------------------------------------------------
+-- Make yourself an admin.
+--
+-- There is no such thing as an admin ACCOUNT here - only an admin row pointing
+-- at an ordinary one. Promote the login you already use; nothing about it
+-- changes, it simply gains read access to everything. Demote by deleting the
+-- row. Nobody has to make a second account, and nobody should: a login you use
+-- daily is a login you notice losing.
+--
+-- 1. See what accounts exist and pick yours.
+-- select id, email, created_at, last_sign_in_at
+--   from auth.users order by created_at;
+
+-- 2. Promote it. Put YOUR address in - whatever you actually signed up with,
+--    which may not be the example this file shipped with. Matching is
+--    case-insensitive because the address you type is rarely the case it was
+--    stored in.
 -- insert into public.admins (user_id)
--- select id from auth.users where email = 'matt@users.setara.ai'
+-- select id from auth.users where lower(email) = lower('matt@users.setara.ai')
 -- on conflict (user_id) do nothing;
+
+-- 3. Confirm it took. Zero rows back means step 2 matched no account - almost
+--    always the address, occasionally an account that was never created.
+-- select u.email, a.added_at
+--   from public.admins a join auth.users u on u.id = a.user_id;
+
+-- To demote:
+-- delete from public.admins
+--  where user_id = (select id from auth.users where lower(email) = lower('matt@users.setara.ai'));
 
 -- --------------------------------------------------------------------------
 -- The original screenplay files live in Storage, and their setup is in its own

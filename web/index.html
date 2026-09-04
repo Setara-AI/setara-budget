@@ -6383,8 +6383,21 @@ async function pullProductions() {
   if (!cloudReady() || !account) return;
   pulling = true;
   try {
+    /* Filtered to the signed-in account explicitly, not left to RLS.
+       
+       RLS returns what you are ALLOWED to see, and for an admin that is every
+       client's work. Without this line the picker would quietly fill with other
+       people's productions the moment anyone was enrolled as an admin - and
+       worse, opening one and touching a slider would try to save it, which the
+       owner-only write policy refuses, so the sync dot would go red on a
+       production that was never yours to edit.
+       
+       Admin reach is a deliberate act - a dashboard query, or an admin screen
+       built for the purpose - and never something the ordinary app does by
+       accident. RLS stays the wall; this is the app declaring what it wants. */
     const { data, error } = await sb.from("productions")
       .select("id,name,snapshot,updated_at")
+      .eq("user_id", account.id)
       .order("updated_at", { ascending: false });
     if (error) throw error;
 
