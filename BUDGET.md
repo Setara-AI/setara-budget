@@ -752,14 +752,20 @@ shown "drop a screenplay in" for a moment before your own work replaced it. That
 reads as the app losing a production and then finding it again. The mark now
 breathes on the sign-in screen's own dark, with the word underneath.
 
-It is **staged**, because a logo that flashes for 200ms reads as a stutter and
-makes a fast app feel slower than a plain pause would. The dark arrives at once
-— what is behind it at boot is an app with no productions in it, which *is* the
-upload screen, and a moment of dark is nothing next to a moment of "drop a
-screenplay in". The mark and the word wait half a second, so a quick load shows
-neither. Reading a dropped file goes further and delays the whole thing: the
-uploader is still the honest thing to look at there and says "Reading …" on the
-card itself, so a fast read shows no loader at all. Every exit routes through one function, including
+The better fix turned out to be **not covering anything**. An empty state is
+only honest once it is known to be true, and until the first pull answers, an
+app with nothing in it is indistinguishable from an account with nothing in it.
+So while `window.__booting` is set, `syncGate` asserts neither: no uploader, and
+none of the chrome that dresses the page for it. The header stays, because the
+header is real. A fast load therefore shows no cover, no logo and no flash of
+anything — the page simply fills in.
+
+The loading screen is what is left over: a wait long enough that silence would
+be worse than a word. It is **staged** too — the mark and the word wait half a
+second, so even then a load that resolves quickly shows nothing. And it wears
+the app's own surface rather than the sign-in screen's dark, because it appears
+over a light page: a black panel read as the site being replaced instead of the
+site still arriving. Every exit routes through one function, including
 the failures, and a 12-second ceiling means a hung request ends with a usable
 app rather than a loader that spins for ever.
 

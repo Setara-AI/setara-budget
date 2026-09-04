@@ -791,14 +791,19 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
 .rolehint b{font-weight:600;color:var(--md-on-surface)}
 
 /* ---------- the loading screen ----------
-   Deliberately the sign-in screen's palette rather than the app's: signed in,
-   this is what sits between the two, and a light flash in the middle of a dark
-   handover is worse than the wait it is covering. */
+   The app's own surface, not the sign-in screen's dark. This used to be dark
+   to match the login it followed, which was true of the handover and wrong
+   about everything else: it appears over a LIGHT page, so a black panel read
+   as the site being replaced rather than as the site still arriving.
+
+   It is also rare now. The uploader is simply not drawn until the first pull
+   answers, so a quick load needs no cover at all - this is only for a wait long
+   enough that silence would be worse than a word. */
 .loader{position:fixed;inset:0;z-index:220;display:grid;place-items:center;
-  align-content:center;gap:22px;background:#08080A;color:#F4F1EC;
-  /* Inherited from body anyway - said out loud because this is the one screen
-     that paints before anything else, and it is the screen where a difference
-     from the rest of the site would be most obvious. */
+  align-content:center;gap:22px;
+  background:var(--md-surface);color:var(--md-on-surface);
+  /* Inherited from body anyway - said out loud because this can paint before
+     anything else, and is where a difference from the site would show most. */
   font-family:var(--font)}
 .loader[hidden]{display:none}
 /* The mark and the word wait half a second before they appear.
@@ -824,7 +829,7 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
 /* The mark breathes rather than spins. A spinner says "this is taking a while";
    a slow pulse says "this is happening", which is the truth - the wait here is
    one database round trip. */
-.loader .mark{width:64px;height:64px;background:#F4F1EC;
+.loader .mark{width:64px;height:64px;background:var(--md-primary);
   animation:breathe 1.9s var(--ease) infinite}
 @keyframes breathe{
   0%,100%{transform:scale(.94);opacity:.5}
@@ -833,7 +838,7 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
    kickers use - so this reads as part of the product rather than a splash. */
 .loader .lw{font-family:var(--font);font-size:var(--label-sm);
   font-weight:var(--label-weight);letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(244,241,236,.62)}
+  color:var(--md-on-surface-variant)}
 /* The ellipsis is drawn rather than typed, so the word never shifts as it
    animates and the whole line stays optically centred. */
 .loader .lw::after{content:"";display:inline-block;width:0;overflow:hidden;
@@ -1762,13 +1767,13 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
     for (var i = 0; i < localStorage.length; i++) {
       var key = localStorage.key(i);
       if (key && /^sb-.+-auth-token$/.test(key) && localStorage.getItem(key)) {
-        /* Signed in: the gate is wrong, but so is the app - the productions
-           have not arrived and an empty app IS the upload screen. Show the
-           loader instead, from the very first paint, and let whatever
-           resolves first take it down. */
+        /* Signed in. The gate is wrong - but so is the app, because the
+           productions have not arrived and an app with none IS the upload
+           screen. Rather than cover that with anything, the uploader is simply
+           not drawn until we know: see syncGate. A fast load then shows no
+           cover, no logo and no flash of black - the page fills in. */
         document.getElementById("authGate").hidden = true;
-        document.getElementById("appLoader").hidden = false;
-        document.documentElement.classList.add("pregate");
+        window.__booting = true;
         return;
       }
     }
@@ -4707,6 +4712,16 @@ function syncGate() {
   const needsRuntime = !noDocument
     && state.sourceKind === "outline" && !(state.runtimeOverride > 0);
   const gated = noDocument || needsRuntime;
+  /* Still finding out whether this account has work. An empty state is only
+     honest once it is known to be true, and until the first pull answers, an
+     app with nothing in it is indistinguishable from an account with nothing
+     in it. So nothing is asserted: no uploader, and none of the chrome that
+     dresses the page for it. The header stays, because the header is real. */
+  if (window.__booting) {
+    document.body.classList.remove("gated");
+    el("emptyGate").hidden = true;
+    return gated;
+  }
   document.body.classList.toggle("gated", gated);
   el("emptyGate").hidden = !gated;
   /* One screen, two questions - the film behind it never changes. */
@@ -6486,17 +6501,24 @@ function initCloud() {
    Without `delay` the cover is immediate, which is right when what is behind it
    is wrong: at boot the app has no productions yet, and an app with no
    productions IS the upload screen. */
+/* Held in scope rather than hung off the function object. As properties they
+   were reachable by name, so anything that rebound the name - instrumentation,
+   a later redefinition - left an armed timer nobody could cancel, and a stale
+   ceiling would then pull down a loader raised long afterwards. */
+let loaderPending = null, loaderCeiling = null;
+
 function showLoader(show, delay) {
   const loader = el("appLoader");
   if (!loader) return;
-  clearTimeout(showLoader.pending);
-  clearTimeout(showLoader.ceiling);
+  clearTimeout(loaderPending);
+  clearTimeout(loaderCeiling);
 
   if (!show) {
     loader.hidden = true;
     document.documentElement.classList.remove("pregate");
     return;
   }
+  window.__booting = false;      // a visible loader means the wait is over being quiet
 
   const raise = () => {
     loader.hidden = false;
@@ -6512,16 +6534,16 @@ function showLoader(show, delay) {
     document.documentElement.classList.add("pregate");
     /* A ceiling, not a schedule. If the network never answers, the loader still
        comes down and the app is there to be used offline. */
-    showLoader.ceiling = setTimeout(() => showLoader(false), 12000);
+    loaderCeiling = setTimeout(() => showLoader(false), 12000);
   };
-  if (delay > 0) showLoader.pending = setTimeout(raise, delay);
+  if (delay > 0) loaderPending = setTimeout(raise, delay);
   else raise();
 }
 
 function showGate(show) {
   const gate = el("authGate");
   if (gate) gate.hidden = !show;
-  if (show) showLoader(false);        // the login is an answer, not a wait
+  if (show) { window.__booting = false; showLoader(false); }   // an answer, not a wait
   document.body.classList.toggle("locked", show);
   /* The pre-paint lock hands over to the real one here, and never comes back. */
   document.documentElement.classList.remove("pregate");
@@ -6559,7 +6581,9 @@ function productionFromRow(row) {
 async function pullProductions() {
   if (!cloudReady() || !account) return;
   pulling = true;
-  showLoader(true);
+  /* Delayed, like every other wait now. The uploader is suppressed while
+     `__booting` is set, so a fast pull needs nothing shown at all. */
+  showLoader(true, 500);
   try {
     /* Filtered to the signed-in account explicitly, not left to RLS.
        
@@ -6598,7 +6622,9 @@ async function pullProductions() {
     console.error("could not load productions:", err);
   } finally {
     pulling = false;
+    window.__booting = false;    // answered - the empty state can be trusted now
     showLoader(false);
+    refresh();                   // and repaint, in case it was suppressed
   }
 }
 
@@ -6807,7 +6833,9 @@ async function cloudDelete(rowId) {
 async function bindAuth() {
   if (!initCloud()) {          // CDN blocked or offline: run local-only
     showGate(false);
+    window.__booting = false;
     showLoader(false);
+    refresh();
     return;
   }
 
