@@ -953,6 +953,24 @@ html.pregate,html.pregate body{overflow:hidden}
 .bubbles .cell:hover .ratepen,.bubbles .cell .ratepen:focus-visible{opacity:1}
 .bubbles .cell.stated .ratepen{opacity:1;color:var(--md-primary)}
 .bubbles .cell.stated .v{color:var(--md-primary)}
+/* What this bid was made from. One quiet line - it is provenance, not a
+   headline - and the filename becomes a download once the original is stored. */
+.srcline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-top:10px;font-size:.75rem;color:var(--md-on-surface-variant)}
+.srcline .k{font-size:var(--label-sm);font-weight:var(--label-weight);
+  letter-spacing:var(--label-track);text-transform:uppercase}
+.srcline b{font-weight:500;color:var(--md-on-surface)}
+.srcline .dl{display:inline-flex;align-items:center;gap:5px;border:0;
+  background:none;font:inherit;font-size:.75rem;color:var(--md-primary);
+  cursor:pointer;padding:3px 8px;border-radius:var(--r-full);
+  transition:background var(--fast) var(--ease)}
+.srcline .dl:hover{background:color-mix(in srgb,var(--md-primary) 12%,transparent)}
+.srcline .dl svg{width:13px;height:13px}
+.srcline .dl[disabled]{opacity:.5;cursor:default;background:none}
+.srcline .nofile{font-size:.75rem;color:var(--md-outline)}
+@media(max-width:620px){.srcline{margin-top:8px;font-size:12px}
+  .srcline .dl{font-size:12px;min-height:32px}}
+
 .rtin{width:5ch;height:26px;padding:0 6px;font:inherit;font-size:1.0625rem;
   font-variant-numeric:tabular-nums;text-align:center;
   border:1px solid var(--md-primary);border-radius:var(--r-xs);
@@ -1735,6 +1753,7 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
         <span class="counter" hidden>Bid <b id="topBid">—</b></span>
       </div>
       <div class="bubbles" id="leverBar"></div>
+      <div class="srcline" id="srcLine" hidden></div>
       </header>
       <div class="droptoast" id="dropToast" role="status" hidden></div>
 <div class="emptygate" id="emptyGate" hidden>
@@ -3905,6 +3924,11 @@ const state = {
      only uses it if someone disagrees with what the pages say. */
   sourceKind: "script",
   runtimeOverride: null,
+  /* Where the ORIGINAL document sits in Storage, or null. The text is what
+     produces the bid - this is kept so the exact document a bid was made
+     against can be handed back, which is what you want if a number is ever
+     disputed. */
+  sourceFile: null,
   view: "overview",
   customRates: {},
   teamRates: { "Team A": 3, "Team B": 3 },
@@ -4628,6 +4652,39 @@ function syncGate() {
   return gated;
 }
 
+/* The provenance line under the bubbles: which document this bid came from,
+   and a way to get it back. Rendered separately from the estimate because it
+   changes on upload, not on every slider drag. */
+function renderSource() {
+  const line = el("srcLine");
+  if (!line) return;
+  const name = state.sourceName;
+  if (!name || document.body.classList.contains("gated")) {
+    line.hidden = true;
+    return;
+  }
+  line.hidden = false;
+  const kind = state.sourceKind === "outline" ? "Outline" : "Screenplay";
+  line.innerHTML = `<span class="k">${kind}</span><b>${esc(name)}</b>`
+    + (state.sourceFile
+      ? `<button type="button" class="dl" id="srcDownload">
+           <svg viewBox="0 0 20 20" aria-hidden="true"><path
+             d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M4 15.5h12" fill="none"
+             stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+             stroke-linejoin="round"/></svg>Original</button>`
+      /* Said out loud rather than left blank. A production whose original was
+         never stored - dropped before this existed, or an upload that failed -
+         should not look identical to one where the file is safe. */
+      : `<span class="nofile">&mdash; original not stored</span>`);
+  const button = el("srcDownload");
+  if (button) button.addEventListener("click", async () => {
+    button.disabled = true;
+    const url = await originalLink(state.sourceFile);
+    button.disabled = false;
+    if (url) window.open(url, "_blank", "noopener");
+  });
+}
+
 /* The team box carries a cost, and the roster is only rebuilt on add / remove /
    open-close - so at first paint it was written before any estimate existed,
    and after that it went stale whenever a lever moved the schedule. Rewriting
@@ -4701,6 +4758,7 @@ function refresh() {
   }
   const est = render();
   syncGate();
+  renderSource();
   renderGenOut();
   syncTeamCosts(est);
   syncLevers(est);
@@ -4808,7 +4866,7 @@ function renderTimeline(est) {
    =========================================================================== */
 
 const PRODUCTION_FIELDS = [
-  "scriptText", "sourceName", "sourceKind", "runtimeOverride",
+  "scriptText", "sourceName", "sourceKind", "runtimeOverride", "sourceFile",
   "videoModel", "imageModel", "contingency",
 ];
 
@@ -4836,6 +4894,7 @@ function restore(snap) {
      relying on that. */
   state.sourceKind = snap.sourceKind || "script";
   state.runtimeOverride = snap.runtimeOverride || null;
+  state.sourceFile = snap.sourceFile || null;
 }
 
 function activeProduction() {
@@ -4851,6 +4910,7 @@ function newProduction(name) {
     roles: ROLES.map((r) => ({ ...r })),
     openRoles: [], customRates: {}, teamRates: { "Team A": 3, "Team B": 3 },
     scriptText: "", sourceName: "", sourceKind: "script", runtimeOverride: null,
+    sourceFile: null,
     videoModel: "seedance-2.5@1080p",
     imageModel: "nano-banana-pro@2K", contingency: 0.20,
   };
@@ -5054,6 +5114,16 @@ function deleteProduction(id) {
   const wasActive = target === state.activeProduction;
   const [gone] = state.productions.splice(index, 1);
   if (gone && gone.row) cloudDelete(gone.row);
+  /* The row and its document go together - otherwise deleting a production
+     leaves the screenplay behind in Storage, which is the one place nobody
+     would think to look for it.
+
+     For the ACTIVE production the live state is the truth, not its snapshot: a
+     snapshot is only written when you switch away, so uploading and then
+     deleting without leaving would have read a stale null here and orphaned
+     the file it had just stored. */
+  const doomedFile = wasActive ? state.sourceFile : (gone && gone.snap && gone.snap.sourceFile);
+  if (doomedFile) removeOriginal(doomedFile);
   if (!wasActive) { renderProductions(); return refresh(); }
   const next = state.productions[Math.max(0, index - 1)];
   state.activeProduction = null;
@@ -5892,10 +5962,34 @@ async function ingest(file) {
     /* A runtime carried over from the last document would be applied silently
        to this one. Whatever was stated was stated about something else. */
     state.runtimeOverride = null;
+    /* Same reasoning for the stored document, one step further: the old file is
+       not merely forgotten, it is deleted. Leaving it would keep a screenplay
+       in Storage that nothing on screen points at any more. */
+    const replaced = state.sourceFile;
+    state.sourceFile = null;
     showSource(file.name);
     nameFromScript((kind === "outline" ? titleFromOutline(text) : titleFromScript(text))
       || file.name);
     refresh();
+
+    /* After the refresh, deliberately. The bid is computed from text that is
+       already in hand, so it must not wait on a network round trip - the
+       numbers are on screen before the upload starts, and the source line
+       fills in when it lands. */
+    uploadOriginal(file).then((path) => {
+      if (token !== ingestToken) {
+        /* A newer document arrived while this was uploading. Its own upload is
+           the one that counts, so this one is removed rather than left orphaned
+           in the bucket with nothing referring to it. */
+        return removeOriginal(path);
+      }
+      if (!path) return renderSource();
+      state.sourceFile = path;
+      renderSource();
+      cloudQueue();
+    });
+    removeOriginal(replaced);
+
     if (kind === "outline") {
       /* Empty, not left holding the last outline's answer - a number already in
          the box is a number that gets accepted without being read. */
@@ -6382,6 +6476,60 @@ function cloudQueue() {
   if (!cloudReady() || !account || pulling) return;
   clearTimeout(cloudTimer);
   cloudTimer = setTimeout(() => cloudSave(), 900);
+}
+
+/* --- the original documents ---------------------------------------------
+   Kept in a private bucket under the owner's user id, which is what every
+   Storage policy keys on. Nothing here is servable by URL: reading one means
+   asking for a short-lived signed link, and only the owner or an admin may ask.
+
+   All of it is best-effort. A failed upload must never cost someone their
+   budget - the text has already been read by then and the bid is already
+   correct - so a failure is logged and the production carries on without a
+   stored document rather than the drop appearing to fail. */
+const STORAGE_BUCKET = "scripts";
+
+async function uploadOriginal(file) {
+  if (!cloudReady() || !account || !file) return null;
+  const dot = file.name.lastIndexOf(".");
+  const ext = dot > 0 ? file.name.slice(dot).toLowerCase() : "";
+  /* Named by uuid, not by the client's filename. Their filename is kept in the
+     snapshot where it belongs; using it as the path would let one production's
+     upload overwrite another's, and would put whatever they happened to call
+     the file into a URL. */
+  const path = `${account.id}/${crypto.randomUUID()}${ext}`;
+  try {
+    const { error } = await sb.storage.from(STORAGE_BUCKET)
+      .upload(path, file, { contentType: file.type || "application/octet-stream" });
+    if (error) throw error;
+    return path;
+  } catch (err) {
+    console.error("could not store the original document:", err);
+    return null;
+  }
+}
+
+async function removeOriginal(path) {
+  if (!cloudReady() || !account || !path) return;
+  try {
+    const { error } = await sb.storage.from(STORAGE_BUCKET).remove([path]);
+    if (error) throw error;
+  } catch (err) { console.error("could not remove the original document:", err); }
+}
+
+/* A signed link, valid for a minute. Long enough to save the file, short enough
+   that a copied URL is not a way around the policies. */
+async function originalLink(path) {
+  if (!cloudReady() || !account || !path) return null;
+  try {
+    const { data, error } = await sb.storage.from(STORAGE_BUCKET)
+      .createSignedUrl(path, 60, { download: true });
+    if (error) throw error;
+    return data.signedUrl;
+  } catch (err) {
+    console.error("could not link the original document:", err);
+    return null;
+  }
 }
 
 async function cloudDelete(rowId) {

@@ -715,7 +715,21 @@ opposite flash by a parse-time script that recognises Supabase's stored session
 key — a paint decision only, never trusted: the token is still verified over the
 network and an expired one puts the gate straight back up.
 
-`supabase/schema.sql` holds the tables, the trigger and every RLS policy. It is
+**The original document.** A screenplay is converted to text *in the browser*
+and only the text is needed to produce a bid — so keeping the file itself is a
+deliberate extra, and it is the exact document a bid was made against, which is
+what you want in hand if a number is ever disputed. Originals go to a **private**
+Storage bucket under the owner's user id; nothing is servable by URL, and reading
+one means asking for a 60-second signed link that only the owner or an admin may
+request. Admins can **read** a client's document and cannot replace it.
+
+The upload happens *after* the estimate renders and is entirely best-effort: the
+bid comes from text already in hand, so it never waits on the network, and a
+failed upload costs a stored file rather than a budget. A production whose
+original was not stored says so on the provenance line instead of looking
+identical to one where the file is safe.
+
+`supabase/schema.sql` holds the tables, the trigger, the bucket and every RLS policy. It is
 idempotent, so it can be run against the live project safely. Admins (rows in
 `public.admins`) may **read** every production; write policies stay owner-only,
 so oversight can never quietly alter somebody's bid.

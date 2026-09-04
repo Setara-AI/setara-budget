@@ -110,6 +110,50 @@ create policy "delete own productions" on public.productions
 -- select id from auth.users where email = 'matt@users.setara.ai'
 -- on conflict (user_id) do nothing;
 
+-- --------------------------------------------------------------------------
+-- The original documents.
+--
+-- The app converts a screenplay to text in the BROWSER and only the text is
+-- needed to produce a bid, so keeping the file itself is a deliberate extra:
+-- it is the exact document a bid was made against, which is the thing you
+-- would want in your hand if a number is ever disputed.
+--
+-- Private bucket. Nothing here is servable by URL - reading a file means asking
+-- for a short-lived signed link, and only the owner or an admin may ask.
+--
+-- The first path segment is the owner's user id, and that is what every policy
+-- below keys on: storage.foldername(name)[1]. A file is therefore reachable by
+-- the account that put it there, and by an admin, and by nobody else.
+-- --------------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('scripts', 'scripts', false, 26214400)      -- 25 MB; a script PDF is 1-6
+on conflict (id) do update
+  set public = false, file_size_limit = excluded.file_size_limit;
+
+drop policy if exists "read own scripts"   on storage.objects;
+drop policy if exists "write own scripts"  on storage.objects;
+drop policy if exists "delete own scripts" on storage.objects;
+
+-- Read: your own, plus everything if you are an admin - the same rule the
+-- productions table uses, so the file and the budget never disagree about who
+-- may see them.
+create policy "read own scripts" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'scripts'
+         and ((storage.foldername(name))[1] = auth.uid()::text or public.is_admin()));
+
+-- Write and delete: yours alone, admin or not. An admin can read the document a
+-- client bid against; an admin cannot replace it with a different one.
+create policy "write own scripts" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'scripts'
+              and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "delete own scripts" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'scripts'
+         and (storage.foldername(name))[1] = auth.uid()::text);
+
 -- ===========================================================================
 -- CHECK IT WORKED. Run this block after the one above; it changes nothing.
 -- ===========================================================================
@@ -142,6 +186,24 @@ create policy "delete own productions" on public.productions
 --   left join public.productions p on p.user_id = u.id
 --  group by u.id, u.email, u.created_at, u.last_sign_in_at
 --  order by last_seen desc nulls last;
+
+-- --------------------------------------------------------------------------
+-- Every stored document, with whose it is and which production it belongs to.
+-- The Storage browser in the dashboard also shows all of these directly - it
+-- runs as the service role, so it ignores the policies above entirely.
+-- --------------------------------------------------------------------------
+-- select u.email                      as client,
+--        p.name                       as production,
+--        p.snapshot ->> 'sourceName'  as filename,
+--        o.name                       as storage_path,
+--        pg_size_pretty((o.metadata ->> 'size')::bigint) as size,
+--        o.created_at
+--   from public.productions p
+--   join auth.users u on u.id = p.user_id
+--   left join storage.objects o
+--          on o.bucket_id = 'scripts' and o.name = p.snapshot ->> 'sourceFile'
+--  where p.snapshot ->> 'sourceFile' is not null
+--  order by o.created_at desc;
 
 -- --------------------------------------------------------------------------
 -- What an admin can see, once enrolled. Paste into the SQL editor.
