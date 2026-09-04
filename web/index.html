@@ -4055,26 +4055,6 @@ function render() {
       the extractor cannot map; export a fresh PDF or a .fountain / .fdx and try again.
       <br><span class="num" style="font-size:11px;color:var(--muted)">
       ${lines.map((l) => esc(l.slice(0, 90))).join("<br>")}</span></span>`;
-  } else if (state.sourceKind === "outline") {
-    /* Not a failure - a disclosure. An outline gives a real runtime (it was
-       typed) and a real beat count, but the reference-image line is only as
-       good as what the outline happened to name, and that is the one number a
-       reader would otherwise assume was measured. Say which is which. */
-    const named = est.script.locations.length;
-    warning.hidden = false;
-    warning.innerHTML = `<span class="ic">i</span><span>
-      <b>Costed from an outline.</b> Runtime is the
-      <b>${est.runtimeLabel}</b> you stated, and that is what the bid is built on
-      &mdash; labour and video generation are both figures against it, so the
-      large numbers here are as firm as they would be with a script.
-      ${est.script.scenes.length} beats set the keyframe count.
-      ${named
-        ? `${named} location${named === 1 ? " was" : "s were"} named in the outline`
-        : `No locations were named in the outline, so none are costed`}, and
-      character looks are inferred from repeated names &mdash; so the reference
-      image line is an estimate, and it will move when a screenplay replaces
-      this. It is ${pct(est.generation.subtotal / (est.bid || 1))} of the bid.
-      </span>`;
   } else {
     warning.hidden = true;
   }

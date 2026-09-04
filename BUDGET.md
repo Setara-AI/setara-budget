@@ -551,8 +551,13 @@ outline invites confident guessing:
 | characters | a heuristic, and the number to distrust |
 
 Under-claiming is the deliberate choice. A beat with no label contributes no
-location plate rather than a made-up one, and the app says so on screen. The
-alternative produces a figure that looks measured and is not.
+location plate rather than a made-up one. The alternative produces a figure that
+looks measured and is not.
+
+A banner used to spell this out above the budget; it was removed as noise. The
+signal that survives is the one that matters — the Runtime tile reads
+**"Runtime · stated"** whenever the figure was typed rather than measured, so a
+stated runtime can never be mistaken for one the tool worked out.
 
 This lands softly because of what drives the bid. Labour and video generation are
 both functions of runtime — which is *stated*, so it is exactly as firm as it
