@@ -801,6 +801,26 @@ input.rateinput::-webkit-outer-spin-button,input.rateinput::-webkit-inner-spin-b
      from the rest of the site would be most obvious. */
   font-family:var(--font)}
 .loader[hidden]{display:none}
+/* The mark and the word wait half a second before they appear.
+
+   A load that resolves in 200ms should not flash a logo at anybody - that
+   reads as a stutter, and it makes a fast app feel slower than a plain pause
+   would. The DARK arrives immediately, because what is behind it at boot is an
+   app with no productions in it yet, which is the upload screen; a moment of
+   dark is nothing, a moment of "drop a screenplay in" is the app appearing to
+   lose your work. So: cover at once, explain only if the wait is real.
+
+   Toggling [hidden] restarts the animation, so every appearance gets its own
+   half second rather than the delay elapsing once for the life of the page. */
+/* `both`, not `forwards`: with forwards alone the delay leaves the element on
+   its specified opacity, which is right here only by luck, and leaves nothing
+   defined if that specified value is ever changed. `both` states the from-state
+   for the delay explicitly. */
+.loader .loadinner{display:grid;place-items:center;gap:22px;opacity:0;
+  animation:loadreveal .3s var(--ease) .5s both}
+@keyframes loadreveal{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  .loader .loadinner{animation-duration:.01s}}
 /* The mark breathes rather than spins. A spinner says "this is taking a while";
    a slow pulse says "this is happening", which is the truth - the wait here is
    one database round trip. */
@@ -1695,8 +1715,10 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
      screenplay in" for a moment before your own work replaced it. That reads as
      the app losing your production and then finding it again. -->
 <div class="loader" id="appLoader" hidden>
-  <i class="mark" aria-hidden="true"></i>
-  <span class="lw">Loading</span>
+  <div class="loadinner">
+    <i class="mark" aria-hidden="true"></i>
+    <span class="lw">Loading</span>
+  </div>
 </div>
 
 <div class="gate" id="authGate">
@@ -5981,7 +6003,7 @@ async function ingest(file) {
     /* A feature-length PDF takes a few seconds to extract, and the drop card
        changing its own label is easy to miss when you have just let go of a
        file. Same screen as the boot wait, for the same reason. */
-    showLoader(true);
+    showLoader(true, 500);
     let text;
     if (/\.pdf$/i.test(file.name) || file.type === "application/pdf") {
       text = await pdfToText(await file.arrayBuffer());
@@ -6455,20 +6477,45 @@ function initCloud() {
 /* Every exit from loading goes through here, including the ones that are
    really failures - a hung request must end with the app visible and usable,
    never with a loader that spins forever. */
-function showLoader(show) {
+/* `delay` is for the waits where what is ALREADY on screen is the right thing
+   to be looking at - reading a dropped file, where the uploader is still the
+   honest answer and says "Reading …" on the card itself. Covering that instantly
+   would replace something useful with something less useful. If the read
+   finishes first the loader is never shown at all.
+
+   Without `delay` the cover is immediate, which is right when what is behind it
+   is wrong: at boot the app has no productions yet, and an app with no
+   productions IS the upload screen. */
+function showLoader(show, delay) {
   const loader = el("appLoader");
   if (!loader) return;
-  loader.hidden = !show;
-  /* `pregate` is the scroll lock. Without it the page keeps its scrollbar
-     while the loader is up, and the reserved gutter shows as a light strip
-     down the right of an otherwise full-bleed dark screen. */
-  document.documentElement.classList.toggle("pregate", show);
-  clearTimeout(showLoader.timer);
-  if (show) {
-    /* A ceiling, not a schedule. If the network never answers, the loader
-       still comes down and the app is there to be used offline. */
-    showLoader.timer = setTimeout(() => { loader.hidden = true; }, 12000);
+  clearTimeout(showLoader.pending);
+  clearTimeout(showLoader.ceiling);
+
+  if (!show) {
+    loader.hidden = true;
+    document.documentElement.classList.remove("pregate");
+    return;
   }
+
+  const raise = () => {
+    loader.hidden = false;
+    /* Restart the reveal by hand. Re-displaying an element is supposed to
+       restart its animation, and in practice the second appearance kept the
+       finished state - so the mark was fully visible immediately, which is the
+       flash this delay exists to prevent. Same reflow trick the filmstrip uses. */
+    const inner = loader.querySelector(".loadinner");
+    if (inner) { inner.style.animation = "none"; void inner.offsetWidth; inner.style.animation = ""; }
+    /* The scroll lock. Without it the page keeps its scrollbar behind the
+       loader, and the reserved gutter shows as a light strip down the right of
+       an otherwise full-bleed dark screen. */
+    document.documentElement.classList.add("pregate");
+    /* A ceiling, not a schedule. If the network never answers, the loader still
+       comes down and the app is there to be used offline. */
+    showLoader.ceiling = setTimeout(() => showLoader(false), 12000);
+  };
+  if (delay > 0) showLoader.pending = setTimeout(raise, delay);
+  else raise();
 }
 
 function showGate(show) {

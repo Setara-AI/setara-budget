@@ -750,9 +750,16 @@ filled with the wrong thing: signed in, the productions are still arriving and
 the app is briefly empty — and an empty app *is* the upload screen, so you were
 shown "drop a screenplay in" for a moment before your own work replaced it. That
 reads as the app losing a production and then finding it again. The mark now
-breathes on the sign-in screen's own dark, with the word underneath, from the
-first paint until the data lands. It also covers reading a PDF, which on a
-feature takes a few seconds. Every exit routes through one function, including
+breathes on the sign-in screen's own dark, with the word underneath.
+
+It is **staged**, because a logo that flashes for 200ms reads as a stutter and
+makes a fast app feel slower than a plain pause would. The dark arrives at once
+— what is behind it at boot is an app with no productions in it, which *is* the
+upload screen, and a moment of dark is nothing next to a moment of "drop a
+screenplay in". The mark and the word wait half a second, so a quick load shows
+neither. Reading a dropped file goes further and delays the whole thing: the
+uploader is still the honest thing to look at there and says "Reading …" on the
+card itself, so a fast read shows no loader at all. Every exit routes through one function, including
 the failures, and a 12-second ceiling means a hung request ends with a usable
 app rather than a loader that spins for ever.
 
