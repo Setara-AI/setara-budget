@@ -110,6 +110,39 @@ create policy "delete own productions" on public.productions
 -- select id from auth.users where email = 'matt@users.setara.ai'
 -- on conflict (user_id) do nothing;
 
+-- ===========================================================================
+-- CHECK IT WORKED. Run this block after the one above; it changes nothing.
+-- ===========================================================================
+
+-- 1. Both new objects should be listed.
+-- select 'admins table' as thing, to_regclass('public.admins') is not null as ok
+-- union all
+-- select 'is_admin()', to_regproc('public.is_admin') is not null;
+
+-- 2. Every policy on productions. If a policy you made earlier is still here
+--    under a DIFFERENT name, it is still in force - policies are OR'd together,
+--    so an old permissive one is not replaced by the strict one above, it is
+--    added to it. Drop anything here you did not intend.
+-- select policyname, cmd, qual, with_check
+--   from pg_policies where schemaname = 'public' and tablename = 'productions'
+--  order by cmd, policyname;
+
+-- 3. Are you actually an admin? Run while signed in as yourself.
+-- select public.is_admin();
+
+-- --------------------------------------------------------------------------
+-- WHO IS USING IT. No new tables needed - Supabase already records this.
+-- --------------------------------------------------------------------------
+-- select u.email                as client,
+--        u.created_at           as joined,
+--        u.last_sign_in_at      as last_seen,
+--        count(p.id)            as productions,
+--        max(p.updated_at)      as last_worked
+--   from auth.users u
+--   left join public.productions p on p.user_id = u.id
+--  group by u.id, u.email, u.created_at, u.last_sign_in_at
+--  order by last_seen desc nulls last;
+
 -- --------------------------------------------------------------------------
 -- What an admin can see, once enrolled. Paste into the SQL editor.
 -- --------------------------------------------------------------------------
