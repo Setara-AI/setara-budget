@@ -940,8 +940,14 @@ html.pregate,html.pregate body{overflow:hidden}
 .bubbles .cell .v{font-size:1.3125rem;font-weight:400;letter-spacing:-.025em;line-height:1.05}
 /* The value and its pencil share a row so the pencil cannot push the number
    off its baseline; the pencil only appears on hover, because five of the six
-   bubbles have nothing to edit and a permanent icon would imply they do. */
-.bubbles .cell .vrow{display:flex;align-items:center;gap:6px;min-height:22px}
+   bubbles have nothing to edit and a permanent icon would imply they do.
+
+   Named `cellval` and not the obvious `vrow`, which was already taken by the
+   approvals block below - that one is a flex COLUMN, and since this rule never
+   declared a direction of its own the column won, stacking every bubble's
+   pencil under its number and adding 26px to the row. */
+.bubbles .cell .cellval{display:flex;flex-direction:row;align-items:center;
+  gap:6px;min-height:22px}
 .bubbles .cell .ratepen{opacity:0;transition:opacity var(--fast) var(--ease),
   color var(--fast) var(--ease),background var(--fast) var(--ease)}
 .bubbles .cell:hover .ratepen,.bubbles .cell .ratepen:focus-visible{opacity:1}
@@ -4338,7 +4344,7 @@ function syncLevers(est) {
   if (bar.children.length !== cells.length) {
     bar.innerHTML = cells.map((c) => `<div class="cell${c.lead ? " lead" : ""}"
       data-cell="${c.id}"><span class="kick-sm">${c.k}</span>
-      <span class="vrow"><span class="v num" data-count="${c.id}"></span>`
+      <span class="cellval"><span class="v num" data-count="${c.id}"></span>`
       + (c.id === "runtime"
         ? `<button class="ratepen" type="button" id="runtimePen"
              title="Set the runtime yourself" aria-label="Set the runtime yourself">
