@@ -9,7 +9,36 @@
 <!-- The only script this page loads. If it fails the app still runs, just
      without sync - see cloudReady() below. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<title>Production Top Sheet</title>
+<title>Setara — Production budget</title>
+<meta name="description" content="Turn a screenplay or an outline into a bid, a crew and a schedule.">
+
+<!-- The mark, on the brand plate. Drawn at 8x and downsampled, because a
+     thin-stroked glyph rasterised straight at 16px turns to mush. -->
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#6750A4">
+
+<!-- What a pasted link unfurls into: the sign-in screen's own look, so what
+     arrives in a message is recognisably the thing the recipient is about to
+     open rather than a bare URL.
+
+     og:image MUST be absolute - a relative path unfurls as no image at all,
+     because the crawler is not resolving it against a page it is rendering. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Setara">
+<meta property="og:title" content="Setara — Production budget">
+<meta property="og:description" content="Turn a screenplay or an outline into a bid, a crew and a schedule.">
+<meta property="og:url" content="https://budget.setara.ai/">
+<meta property="og:image" content="https://budget.setara.ai/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Setara — Production budget">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Setara — Production budget">
+<meta name="twitter:description" content="Turn a screenplay or an outline into a bid, a crew and a schedule.">
+<meta name="twitter:image" content="https://budget.setara.ai/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
