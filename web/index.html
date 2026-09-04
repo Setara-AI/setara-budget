@@ -228,6 +228,42 @@ button,input,select,textarea{font-family:inherit;font-weight:inherit;color:inher
 .bigdrop .pill{margin-top:10px;pointer-events:none;height:44px;padding:0 26px;
   font-size:.9375rem;background:#F4F1EC;color:#101014;box-shadow:none}
 .herofoot{font-size:.875rem;color:rgba(244,241,236,.62)}
+/* The two steps share the screen and the film behind it; only one is ever up. */
+.step{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%}
+.runtimestep{padding-top:4px}
+.rtcard{display:flex;flex-direction:column;align-items:center;gap:14px;
+  width:min(560px,100%);padding:36px 40px 30px;text-align:center;color:#F4F1EC;
+  border:1px solid rgba(244,241,236,.16);border-radius:var(--r-2xl);
+  background:color-mix(in srgb,#0C0C10 52%,transparent);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  box-shadow:0 24px 60px -26px rgb(0 0 0/.8)}
+.rtkick{font-size:.6875rem;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(244,241,236,.58)}
+.rtcard h2{font-size:1.625rem;font-weight:500;letter-spacing:-.02em;line-height:1.15}
+.rtwhy{font-size:.875rem;line-height:1.6;max-width:44ch;color:rgba(244,241,236,.7)}
+.rtwhy b{color:#F4F1EC;font-weight:500}
+.rtform{display:flex;align-items:center;justify-content:center;gap:10px;
+  flex-wrap:wrap;margin-top:4px}
+/* Wide enough for three digits and no wider - a full-width box would invite a
+   sentence into a field that wants a number. */
+.rtcard input[type=number]{width:7ch;height:52px;padding:0 12px;text-align:center;
+  font-size:1.375rem;font-weight:500;font-variant-numeric:tabular-nums;
+  color:#F4F1EC;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.22);border-radius:var(--r-md);box-shadow:none}
+.rtcard input[type=number]:focus{outline:none;border-color:rgba(255,255,255,.6);
+  background:rgba(255,255,255,.12)}
+.rtcard input::-webkit-outer-spin-button,
+.rtcard input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.rtcard input[type=number]{-moz-appearance:textfield}
+.rtunit{font-size:.9375rem;color:rgba(244,241,236,.66);margin-right:4px}
+.rtcard .pill{height:52px;padding:0 26px;font-size:.9375rem;
+  background:#F4F1EC;color:#101014;box-shadow:none}
+.rtcard .pill:hover{background:#fff}
+.rtcard .err{max-width:46ch;color:#FFE2DE;background:rgba(179,38,30,.28);
+  border:1px solid rgba(255,150,140,.32)}
+.rtback{font-size:.8125rem;color:rgba(244,241,236,.55)}
+.rtback .linkbtn{color:rgba(244,241,236,.85);font-size:.8125rem}
+
 /* A session now always opens here, so the work you already have has to be
    reachable from here - not only from the picker in the corner. */
 .recents{display:flex;flex-direction:column;align-items:center;gap:11px;
@@ -902,6 +938,23 @@ html.pregate,html.pregate body{overflow:hidden}
   transition:box-shadow var(--std) var(--ease),transform var(--std) var(--ease)}
 .bubbles .cell:hover{box-shadow:var(--e2);transform:translateY(-1px)}
 .bubbles .cell .v{font-size:1.3125rem;font-weight:400;letter-spacing:-.025em;line-height:1.05}
+/* The value and its pencil share a row so the pencil cannot push the number
+   off its baseline; the pencil only appears on hover, because five of the six
+   bubbles have nothing to edit and a permanent icon would imply they do. */
+.bubbles .cell .vrow{display:flex;align-items:center;gap:6px;min-height:22px}
+.bubbles .cell .ratepen{opacity:0;transition:opacity var(--fast) var(--ease),
+  color var(--fast) var(--ease),background var(--fast) var(--ease)}
+.bubbles .cell:hover .ratepen,.bubbles .cell .ratepen:focus-visible{opacity:1}
+.bubbles .cell.stated .ratepen{opacity:1;color:var(--md-primary)}
+.bubbles .cell.stated .v{color:var(--md-primary)}
+.rtin{width:5ch;height:26px;padding:0 6px;font:inherit;font-size:1.0625rem;
+  font-variant-numeric:tabular-nums;text-align:center;
+  border:1px solid var(--md-primary);border-radius:var(--r-xs);
+  background:var(--md-surface);color:var(--md-on-surface);outline:none}
+.rtin::-webkit-outer-spin-button,.rtin::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0}
+.rtin{-moz-appearance:textfield}
+@media(hover:none){.bubbles .cell .ratepen{opacity:1}}
 .bubbles .cell.lead{background:color-mix(in srgb,var(--md-primary) 10%,var(--md-surface-container))}
 .bubbles .cell.lead .v{font-size:1.5rem;font-weight:500;color:var(--md-primary)}
 @media(max-width:760px){.brand em{display:none}
@@ -1509,6 +1562,14 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
   .bigdrop .sm{font-size:13px}
   .bigdrop .pill{height:44px;font-size:15px;margin-top:6px}
   .herofoot,.herofoot .linkbtn{font-size:13px}
+  .rtcard{padding:26px 20px 22px;gap:12px}
+  .rtcard h2{font-size:21px}
+  .rtwhy{font-size:13px}
+  /* 16px so iOS does not zoom, and the button drops to its own full-width row
+     rather than squeezing onto one line with the field. */
+  .rtcard input[type=number]{height:48px;font-size:19px}
+  .rtcard .pill{height:48px;font-size:15px;flex:1 1 100%}
+  .rtback,.rtback .linkbtn{font-size:13px}
   .recents{margin-top:10px;gap:9px}
   .recents .rlabel{font-size:11px;letter-spacing:.13em}
   .rchip{font-size:13px;min-height:38px;max-width:18ch}
@@ -1673,6 +1734,7 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
 <div class="emptygate" id="emptyGate" hidden>
         <div class="filmstrip" id="heroFilm" aria-hidden="true"></div>
         <span class="eyebrow">Screenplay &rarr; bid, crew, schedule</span>
+        <div class="step" id="dropStep">
         <label class="bigdrop" id="bigDrop">
           <input type="file" id="bigFile"
             accept="application/pdf,.pdf,.fountain,.txt,.md,.fdx">
@@ -1685,12 +1747,39 @@ stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6
               stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <span class="big">Drop the screenplay in</span>
-          <span class="sm">PDF, Fountain, .fdx or plain text. Setara reads it and
-            prices the job.</span>
+          <span class="sm">PDF, Fountain, .fdx or plain text &mdash; a full
+            screenplay, or an outline if that is all there is yet.</span>
           <span class="pill" aria-hidden="true">Choose a file</span>
         </label>
         <p class="herofoot">or <button type="button" class="linkbtn" id="useSample">see
           it run on a sample script</button></p>
+        </div>
+
+        <!-- Step two, and only for an outline: the one thing an outline cannot
+             tell us. It is asked here rather than defaulted because runtime is
+             what the whole bid is built on - labour and video generation are
+             both functions of it - so a guess would not be a small error. -->
+        <div class="step runtimestep" id="runtimeStep" hidden>
+          <div class="rtcard">
+            <span class="rtkick">That reads as an outline, not a screenplay</span>
+            <h2>How long will the finished film be?</h2>
+            <p class="rtwhy">We found <b id="runtimeBeats">—</b> in
+              <b id="runtimeFrom">your outline</b>. An outline says what happens,
+              not how long it plays &mdash; and runtime is what the budget is
+              built on. Give it your best estimate; you can change it later.</p>
+            <form class="rtform" id="runtimeForm">
+              <input type="number" id="runtimeMins" min="1" max="600" step="1"
+                inputmode="numeric" placeholder="90" aria-label="Runtime in minutes">
+              <span class="rtunit">minutes</span>
+              <button class="pill" type="submit">Build the budget</button>
+            </form>
+            <div class="err" id="runtimeErr" hidden></div>
+            <p class="rtback">Meant to upload a screenplay?
+              <button type="button" class="linkbtn" id="runtimeBack">Choose a
+                different file</button></p>
+          </div>
+        </div>
+
         <div class="recents" id="recents" hidden></div>
         <div class="err" id="gateErr" hidden></div>
       </div>
@@ -2810,6 +2899,171 @@ function parseScript(text) {
            pages: scenes.reduce((a, s) => a + s.pages, 0) };
 }
 
+/* --- outlines ------------------------------------------------------------
+   An outline is not a screenplay with the formatting stripped out; it is a
+   different document, and the difference is the whole reason this exists. It
+   has no slug lines, so there are no pages, so the page curve - which is what
+   normally sets the runtime - has nothing to work on. That is why a runtime has
+   to be STATED for an outline, and why the app asks for one before it will
+   cost it. Everything else the estimate needs is derivable from the beats.
+
+   What the estimate then does with it is unchanged: the stated runtime is the
+   total, and `buildPlan`'s `scale` shares that total across the beats in
+   proportion to how much is written about each. A beat with a paragraph under
+   it is a longer sequence than a beat with a line. That is the same mechanism
+   a screenplay uses, fed a different document.  */
+
+/* A beat is an explicitly marked item where the outline marks them - numbered,
+   lettered or bulleted - because an outline that marks its beats has already
+   told us where they are. Failing that, a paragraph. */
+const BEAT_MARK = /^\s*(?:\d{1,3}\s*[.)\]]\s|[-*\u2022]\s|#{1,3}\s|[A-Z]\s*[.)]\s)/;
+
+function splitBeats(text) {
+  const lines = text.replace(/\r\n?/g, "\n").replace(/\f/g, "\n").split("\n");
+  const marked = [];
+  let current = null;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { current = null; continue; }
+    if (BEAT_MARK.test(raw)) {
+      current = [line.replace(BEAT_MARK, "").trim()];
+      marked.push(current);
+    } else if (current) {
+      current.push(line);
+    }
+    /* Anything before the first marker is front matter - a title, a logline -
+       and is deliberately dropped rather than folded into beat one. */
+  }
+  if (marked.length >= 3) {
+    return marked.map((b) => b.join(" ").replace(/\s+/g, " ").trim()).filter(Boolean);
+  }
+  return text.replace(/\r\n?/g, "\n").split(/\n\s*\n+/)
+    .map((para) => para.replace(/\f/g, " ").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+/* A beat often opens with the place it happens in, set off by a dash or a
+   colon - "THE DINER - Mara refuses the job". Where that is there, it is a
+   location and it is deduplicated across beats like any other. Where it is
+   not, the beat contributes NO location plate rather than an invented one:
+   under-claiming is recoverable, and the app says out loud when it happened. */
+function beatLabel(text) {
+  const m = text.match(/^([^.!?]{2,60}?)\s+[\u2013\u2014-]\s+/)
+         || text.match(/^([^.!?]{2,60}?):\s+/);
+  if (!m) return "";
+  const label = m[1].trim();
+  return label.split(/\s+/).length <= 8 ? label : "";
+}
+
+/* Names in an outline are a guess, and are labelled as one wherever the result
+   is shown. A screenplay names its characters unambiguously - the cue line does
+   it - and prose does not.
+
+   Two rules, both learned from getting it wrong. Names are read from the beat
+   BODY only, never the label: the label is where the location lives, so reading
+   it too made "THE DINER" a character with its own look sheet. And a merely
+   Capitalised word qualifies on appearing in two or more beats alone - an
+   earlier version also demanded it appear away from the start of a sentence,
+   which sounds prudent and quietly deleted a lead, because in an outline the
+   protagonist is the subject of nearly every beat and so starts nearly every
+   sentence.
+
+   Over-claiming a name is cheap: buildVariants only sheets a character seen in
+   two or more scenes, so a one-off false positive costs nothing at all. */
+const OUTLINE_STOPWORDS = new Set(("the a an and but or so then now later meanwhile "
+  + "he she it we they i you his her their its our my this that there here "
+  + "when while after before as at in on to of for with from by into out up "
+  + "one two three four five act scene beat sequence part chapter page "
+  + "int ext day night morning evening dawn dusk continuous flashback "
+  + "montage cut open close final end").split(" "));
+
+function outlineNames(bodies, labelWords) {
+  const beatsSeen = new Map();
+  const note = (name, i) => {
+    const key = name.toUpperCase();
+    if (OUTLINE_STOPWORDS.has(key.toLowerCase()) || labelWords.has(key)) return;
+    if (!beatsSeen.has(key)) beatsSeen.set(key, new Set());
+    beatsSeen.get(key).add(i);
+  };
+  bodies.forEach((body, i) => {
+    for (const m of body.matchAll(CAPS_RUN)) note(m[1].trim(), i);
+    for (const m of body.matchAll(/\b([A-Z][a-z]{2,})\b/g)) note(m[1], i);
+  });
+  const names = new Set();
+  for (const [name, seen] of beatsSeen) if (seen.size >= 2) names.add(name);
+  return names;
+}
+
+const OUTLINE_NIGHT = /\b(night|dusk|dawn|midnight|evening|nocturnal|after dark)\b/i;
+
+function parseOutline(text) {
+  const beats = splitBeats(text);
+
+  /* Split label from body once, up front: everything downstream wants one or
+     the other and never both. */
+  const parts = beats.map((beat) => {
+    const label = beatLabel(beat);
+    const body = label
+      ? beat.slice(beat.indexOf(label) + label.length).replace(/^[\s\u2013\u2014:-]+/, "")
+      : beat;
+    return { beat, label, body: body || beat };
+  });
+
+  /* Every word of every label, so a location can never also be a character. */
+  const labelWords = new Set();
+  for (const { label } of parts) {
+    if (!label) continue;
+    labelWords.add(label.toUpperCase());
+    for (const word of label.toUpperCase().split(/\s+/)) labelWords.add(word);
+  }
+
+  const names = [...outlineNames(parts.map((p) => p.body), labelWords)];
+  const wordRe = (n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+
+  const scenes = parts.map(({ beat, label, body }, i) => ({
+    number: i + 1,
+    heading: label ? label.toUpperCase() : `BEAT ${i + 1}`,
+    intExt: "", location: label ? label.toUpperCase() : "",
+    time: "", effectiveTime: "",
+    action: [body], dialogue: [],
+    lineCount: 1,
+    /* Zero, and it matters: pages are what the curve times, and an outline has
+       none. A missing runtime therefore reads as zero rather than as a
+       plausible-looking number derived from how much prose was written. */
+    pages: 0, eighths: 1,
+    characters: names.filter((n) => wordRe(n).test(body)),
+    isNight: OUTLINE_NIGHT.test(beat),
+    isExterior: false,
+  }));
+
+  const characters = [], locations = [];
+  for (const scene of scenes) {
+    for (const c of scene.characters) if (!characters.includes(c)) characters.push(c);
+    if (scene.location && !locations.includes(scene.location)) locations.push(scene.location);
+  }
+  return { scenes, characters, locations, linesPerPage: LINES_PER_PAGE,
+           pageCount: null, pages: 0, isOutline: true };
+}
+
+/* An outline's title, if it has one. titleFromScript is built for a title page
+   and, given an outline that opens straight into "1. THE DINER - She waits",
+   will happily name the production after the first beat. A title has to be a
+   line that is NOT a beat, standing before the beats begin. */
+function titleFromOutline(text) {
+  for (const raw of text.replace(/\r\n?/g, "\n").split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (BEAT_MARK.test(raw)) return "";        // beats started; there was no title
+    if (line.length > 70) return "";           // that is prose, not a title
+    return line;
+  }
+  return "";
+}
+
+/* One door for both documents, so nothing downstream has to know which it got. */
+const parseSource = (text, kind) =>
+  (kind === "outline" ? parseOutline(text) : parseScript(text));
+
 /* --- breakdown ---------------------------------------------------------- */
 const WEIGHTS = { cast: [1, 4], props: [1, 3], effects: [2, 6], crowd: [2, 2],
                   animals: [1, 1], night: [1, 1], exterior: [1, 1], action: [2, 2] };
@@ -2980,7 +3234,11 @@ const minutesFromPages = (pages, pacing = 1) =>
 const WORD = /[A-Za-z0-9'\-]+/g;
 const countWords = (text) => (text.match(WORD) || []).length;
 
-function timeScript(script, pacing = 1) {
+/* `stated` is a runtime the producer typed, in minutes. It REPLACES the page
+   curve rather than adjusting it: a producer who says the film is 94 minutes is
+   not offering a correction to be blended, they are telling you the answer. For
+   an outline it is the only source there is. */
+function timeScript(script, pacing = 1, stated = null) {
   const scenes = script.scenes.map((scene) => {
     const dialogueWords = scene.dialogue.reduce((a, [, line]) => a + countWords(line), 0);
     const actionWords = scene.action.reduce((a, line) => a + countWords(line), 0);
@@ -2994,16 +3252,22 @@ function timeScript(script, pacing = 1) {
   const contentMinutes = scenes.reduce((a, s) => a + s.minutes, 0);
   const pageMinutes = minutesFromPages(script.pages, pacing);
   const disagreement = contentMinutes ? (pageMinutes - contentMinutes) / contentMinutes : 0;
-  const minutes = pageMinutes;
+  const overridden = stated > 0;
+  const minutes = overridden ? stated : pageMinutes;
   /* The one failure that matters now that pages set the runtime: a PDF whose
      extraction lost its line breaks packs the script into a handful of pages
      and the film comes out minutes long. A real page holds 120-420 words. */
   const words = scenes.reduce((a, s) => a + s.dialogueWords + s.actionWords, 0);
   const wordsPerPage = script.pages ? words / script.pages : 0;
-  const trustworthy = words < 500
+  /* That check exists to catch a PDF whose extraction lost its line breaks and
+     so reports a handful of pages for a feature. Once a runtime has been stated
+     the page count no longer sets anything, so the check has nothing left to
+     protect and would only cry wolf. */
+  const trustworthy = overridden || words < 500
     || (script.pages > 0 && wordsPerPage >= 120 && wordsPerPage <= 420);
   return { scenes, contentMinutes, pageMinutes, pages: script.pages, disagreement,
-           words, wordsPerPage, minutes, seconds: minutes * 60, trustworthy };
+           words, wordsPerPage, minutes, seconds: minutes * 60, trustworthy,
+           overridden };
 }
 
 /* --- variants: images are looks, not names ------------------------------- */
@@ -3245,8 +3509,8 @@ const revisionMultiplier = (cfg) => passesOver(cfg, cfg.revisionsPerScene || 0);
 const labourMultiplier = (cfg) =>
   passesOver(cfg, cfg.labourRevisions ?? cfg.revisionsPerScene ?? 0);
 
-function buildPlan(breakdown, cfg) {
-  const timing = timeScript(breakdown.script, cfg.pacing);
+function buildPlan(breakdown, cfg, stated = null) {
+  const timing = timeScript(breakdown.script, cfg.pacing, stated);
   const variants = buildVariants(breakdown, cfg);
 
   // Scene rows, sized by each scene's share of the runtime.
@@ -3523,19 +3787,19 @@ function scheduleForTeam(work, roles, plan) {
 /* --- the estimate ------------------------------------------------------- */
 /* Parsing and breaking down a script is the expensive half and depends only on
    the text, so it is cached. Dragging a slider re-costs; it does not re-read. */
-let readCache = { text: null, script: null, breakdown: null };
+let readCache = { text: null, kind: null, script: null, breakdown: null };
 
-function readScript(text) {
-  if (readCache.text !== text) {
-    const script = parseScript(text);
-    readCache = { text, script, breakdown: breakDown(script) };
+function readScript(text, kind) {
+  if (readCache.text !== text || readCache.kind !== kind) {
+    const script = parseSource(text, kind);
+    readCache = { text, kind, script, breakdown: breakDown(script) };
   }
   return readCache;
 }
 
 function buildEstimate(state) {
-  const { script, breakdown } = readScript(state.scriptText);
-  const plan = buildPlan(breakdown, state.cfg);
+  const { script, breakdown } = readScript(state.scriptText, state.sourceKind);
+  const plan = buildPlan(breakdown, state.cfg, state.runtimeOverride);
   const generation = computeCosts(plan, state.videoModel, state.imageModel);
   const work = workVolume(plan);
   const staffing = scheduleForTeam(work, state.roles, plan);
@@ -3630,6 +3894,11 @@ const state = {
      away underneath the drop target. */
   scriptText: "",
   sourceName: "",
+  /* Which document was handed over, and the runtime the producer stated for it.
+     An outline REQUIRES the second - it has no pages to time - while a script
+     only uses it if someone disagrees with what the pages say. */
+  sourceKind: "script",
+  runtimeOverride: null,
   view: "overview",
   customRates: {},
   teamRates: { "Team A": 3, "Team B": 3 },
@@ -3756,6 +4025,26 @@ function render() {
       the extractor cannot map; export a fresh PDF or a .fountain / .fdx and try again.
       <br><span class="num" style="font-size:11px;color:var(--muted)">
       ${lines.map((l) => esc(l.slice(0, 90))).join("<br>")}</span></span>`;
+  } else if (state.sourceKind === "outline") {
+    /* Not a failure - a disclosure. An outline gives a real runtime (it was
+       typed) and a real beat count, but the reference-image line is only as
+       good as what the outline happened to name, and that is the one number a
+       reader would otherwise assume was measured. Say which is which. */
+    const named = est.script.locations.length;
+    warning.hidden = false;
+    warning.innerHTML = `<span class="ic">i</span><span>
+      <b>Costed from an outline.</b> Runtime is the
+      <b>${est.runtimeLabel}</b> you stated, and that is what the bid is built on
+      &mdash; labour and video generation are both figures against it, so the
+      large numbers here are as firm as they would be with a script.
+      ${est.script.scenes.length} beats set the keyframe count.
+      ${named
+        ? `${named} location${named === 1 ? " was" : "s were"} named in the outline`
+        : `No locations were named in the outline, so none are costed`}, and
+      character looks are inferred from repeated names &mdash; so the reference
+      image line is an estimate, and it will move when a screenplay replaces
+      this. It is ${pct(est.generation.subtotal / (est.bid || 1))} of the bid.
+      </span>`;
   } else {
     warning.hidden = true;
   }
@@ -4049,11 +4338,73 @@ function syncLevers(est) {
   if (bar.children.length !== cells.length) {
     bar.innerHTML = cells.map((c) => `<div class="cell${c.lead ? " lead" : ""}"
       data-cell="${c.id}"><span class="kick-sm">${c.k}</span>
-      <span class="v num" data-count="${c.id}"></span></div>`).join("");
+      <span class="vrow"><span class="v num" data-count="${c.id}"></span>`
+      + (c.id === "runtime"
+        ? `<button class="ratepen" type="button" id="runtimePen"
+             title="Set the runtime yourself" aria-label="Set the runtime yourself">
+             <svg viewBox="0 0 20 20" aria-hidden="true"><path
+               d="M2.5 14.4V17h2.6l7.7-7.7-2.6-2.6L2.5 14.4ZM16.8 6.2a.7.7 0 0 0 0-1L15.3 3.7a.7.7 0 0 0-1 0l-1.3 1.3 2.6 2.6 1.2-1.4Z"
+               fill="currentColor"/></svg></button>
+           <input class="rtin" type="number" id="runtimeIn" min="1" max="600"
+             step="1" inputmode="numeric" hidden aria-label="Runtime in minutes">`
+        : "")
+      + `</span></div>`).join("");
+    bindRuntimePen();
   }
   for (const c of cells) {
     countTo(bar.querySelector(`[data-count="${c.id}"]`), c.to, c.fmt);
   }
+  /* Says where the number came from. A runtime that was typed and a runtime
+     that was read off the pages are the same figure on screen and completely
+     different claims, and only one of them is the app's to defend. */
+  const cell = bar.querySelector('[data-cell="runtime"]');
+  if (cell) {
+    const stated = state.runtimeOverride > 0;
+    cell.classList.toggle("stated", stated);
+    cell.querySelector(".kick-sm").textContent = stated ? "Runtime · stated" : "Runtime";
+  }
+}
+
+/* The runtime is the one figure on the bar that is an input as well as an
+   output - for an outline it is the ONLY source, and for a script a producer
+   who knows the picture runs 94 minutes should be able to say so rather than
+   argue with the page curve through the pacing slider. */
+function bindRuntimePen() {
+  const pen = el("runtimePen"), input = el("runtimeIn");
+  if (!pen || !input) return;
+  const value = () => pen.closest(".cell").querySelector(".v");
+
+  const open = () => {
+    const est = window.__est;
+    input.value = state.runtimeOverride > 0
+      ? state.runtimeOverride
+      : Math.round((est && est.runtimeMinutes) || 0) || "";
+    value().hidden = true;
+    input.hidden = false;
+    input.focus();
+    input.select();
+  };
+  const close = () => { input.hidden = true; value().hidden = false; };
+
+  const commit = () => {
+    const raw = input.value.trim();
+    const minutes = Number(raw);
+    /* Cleared on purpose means "go back to reading it off the document". For a
+       script that is the page curve; for an outline there is nothing to fall
+       back to, so the landing screen asks the question again - which is the
+       honest outcome, not a regression. */
+    if (!raw) state.runtimeOverride = null;
+    else if (minutes > 0 && minutes <= 600) state.runtimeOverride = minutes;
+    close();
+    refresh();
+  };
+
+  pen.addEventListener("click", () => (input.hidden ? open() : close()));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); commit(); }
+    if (e.key === "Escape") { e.preventDefault(); close(); }
+  });
+  input.addEventListener("blur", commit);
 }
 
 /* Restore this production's planning knobs to the shipped defaults. Only the
@@ -4239,13 +4590,28 @@ function filmstrip(host, hold = 7000) {
 }
 
 /* One entry point: recost, repaint whichever view is showing. */
-/* With no script there is nothing to cost, so the whole screen becomes the
-   uploader rather than showing a page of zeroes. */
+/* Two things can stop a budget existing, and the landing screen asks about
+   whichever it is: there is no document yet, or there is an outline and nobody
+   has said how long the film runs. The second is a hard gate rather than a
+   default, because a plausible guess at a runtime is worse than an empty box -
+   it would be believed. */
 function syncGate() {
-  const parsed = state.scriptText.trim() ? parseScript(state.scriptText) : { scenes: [] };
-  const gated = !parsed.scenes.length;
+  const parsed = state.scriptText.trim()
+    ? parseSource(state.scriptText, state.sourceKind) : { scenes: [] };
+  const noDocument = !parsed.scenes.length;
+  const needsRuntime = !noDocument
+    && state.sourceKind === "outline" && !(state.runtimeOverride > 0);
+  const gated = noDocument || needsRuntime;
   document.body.classList.toggle("gated", gated);
   el("emptyGate").hidden = !gated;
+  /* One screen, two questions - the film behind it never changes. */
+  el("dropStep").hidden = !noDocument;
+  el("runtimeStep").hidden = noDocument || !needsRuntime;
+  if (needsRuntime) {
+    el("runtimeBeats").textContent = parsed.scenes.length === 1
+      ? "1 beat" : `${parsed.scenes.length} beats`;
+    el("runtimeFrom").textContent = state.sourceName || "your outline";
+  }
   /* Deferred, then re-checked: at boot the sign-in gate has not decided yet
      whether it is going up, and starting the reel behind a screen nobody can
      see would fetch stills for nothing. `filmstrip` is idempotent, so a call
@@ -4436,8 +4802,8 @@ function renderTimeline(est) {
    =========================================================================== */
 
 const PRODUCTION_FIELDS = [
-  "scriptText", "sourceName", "videoModel", "imageModel",
-  "contingency",
+  "scriptText", "sourceName", "sourceKind", "runtimeOverride",
+  "videoModel", "imageModel", "contingency",
 ];
 
 function snapshot() {
@@ -4459,6 +4825,11 @@ function restore(snap) {
   state.teamRates = { ...(snap.teamRates || {}) };
   state.openRoles = new Set(snap.openRoles);
   for (const field of PRODUCTION_FIELDS) state[field] = snap[field];
+  /* Productions saved before these two fields existed have neither. Undefined
+     would work by accident everywhere it is read; saying so is better than
+     relying on that. */
+  state.sourceKind = snap.sourceKind || "script";
+  state.runtimeOverride = snap.runtimeOverride || null;
 }
 
 function activeProduction() {
@@ -4473,7 +4844,8 @@ function newProduction(name) {
     cfg: { ...FORMULA, revisionShares: [...FORMULA.revisionShares] },
     roles: ROLES.map((r) => ({ ...r })),
     openRoles: [], customRates: {}, teamRates: { "Team A": 3, "Team B": 3 },
-    scriptText: "", sourceName: "", videoModel: "seedance-2.5@1080p",
+    scriptText: "", sourceName: "", sourceKind: "script", runtimeOverride: null,
+    videoModel: "seedance-2.5@1080p",
     imageModel: "nano-banana-pro@2K", contingency: 0.20,
   };
   state.productions.push({ id, name, snap: fresh });
@@ -5482,19 +5854,49 @@ async function ingest(file) {
        says what went wrong. */
     const parsed = parseScript(text);
     if (token !== ingestToken) return;
+
+    /* No slug lines does not necessarily mean a broken file any more - it may
+       simply be an outline, which is a document this now prices. So the second
+       reader gets a turn before anything is rejected.
+
+       Three beats is the floor, and it is doing real work: a screenplay whose
+       PDF extraction collapsed into one wall of text produces one "beat", and
+       that must still fail loudly rather than be quietly priced as an outline
+       with a made-up runtime. Anything that does get through as an outline is
+       told so in as many words, and cannot be costed until a runtime is typed -
+       so a misread is visible immediately instead of hiding in the bid. */
+    let kind = "script";
     if (!parsed.scenes.length) {
-      showDropError(`No scene headings found in ${file.name}. The parser looks for `
-        + `INT./EXT. slug lines — check the file exported with its formatting intact, `
-        + `or that it is not a scan of printed pages (no text layer to read).`);
-      return;
+      const outline = parseOutline(text);
+      if (outline.scenes.length < 3) {
+        showDropError(`No scene headings found in ${file.name}, and it does not `
+          + `read as an outline either. The parser looks for INT./EXT. slug lines, `
+          + `or an outline of at least three beats — check the file exported with `
+          + `its formatting intact, and that it is not a scan of printed pages `
+          + `(no text layer to read).`);
+        return;
+      }
+      kind = "outline";
     }
 
     if (token !== ingestToken) return;      // a newer drop already landed
 
     state.scriptText = text;
+    state.sourceKind = kind;
+    /* A runtime carried over from the last document would be applied silently
+       to this one. Whatever was stated was stated about something else. */
+    state.runtimeOverride = null;
     showSource(file.name);
-    nameFromScript(titleFromScript(text) || file.name);
+    nameFromScript((kind === "outline" ? titleFromOutline(text) : titleFromScript(text))
+      || file.name);
     refresh();
+    if (kind === "outline") {
+      /* Empty, not left holding the last outline's answer - a number already in
+         the box is a number that gets accepted without being read. */
+      el("runtimeMins").value = "";
+      el("runtimeErr").hidden = true;
+      el("runtimeMins").focus();
+    }
   } catch (err) {
     if (token === ingestToken) {
       showDropError(`Could not read ${file.name} — ${err.message || String(err)}`);
@@ -5527,6 +5929,26 @@ function bind() {
   /* Nothing starts on the sample any more, so there has to be a way back to
      it - otherwise the only way to see the tool work is to own a screenplay.
      It sits outside the <label>, so this click cannot open the file dialog. */
+  /* Step two of the landing screen. The number is validated here rather than
+     leant on the input's own min/max, because a typed 0 or a pasted "ninety"
+     both arrive as something the estimate would happily treat as no runtime at
+     all and cost as a zero-minute film. */
+  el("runtimeForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const minutes = Number(el("runtimeMins").value);
+    const box = el("runtimeErr");
+    if (!(minutes > 0) || minutes > 600) {
+      box.hidden = false;
+      box.textContent = "Give a runtime in minutes — a whole number between 1 and 600.";
+      el("runtimeMins").focus();
+      return;
+    }
+    box.hidden = true;
+    state.runtimeOverride = minutes;
+    refresh();
+  });
+  el("runtimeBack").addEventListener("click", () => el("bigFile").click());
+
   el("recents").addEventListener("click", (e) => {
     const chip = e.target.closest(".rchip");
     if (chip) switchProduction(chip.dataset.id);
@@ -5535,6 +5957,8 @@ function bind() {
     e.preventDefault();
     e.stopPropagation();
     state.scriptText = SAMPLE;
+    state.sourceKind = "script";
+    state.runtimeOverride = null;
     showSource("Sample script");
     nameFromScript("Sample script");
     refresh();

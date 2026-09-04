@@ -197,6 +197,11 @@ class Runtime:
     page_minutes: float          # the calibrated page rule - the number we use
     content_minutes: float       # the element-timed cross-check
     pages: float = 0.0           # raw page count, before the curve
+    #: A runtime the producer stated, in minutes. It REPLACES the curve rather
+    #: than adjusting it: someone who says the film runs 94 minutes is not
+    #: offering a correction to be blended in, they are telling you the answer.
+    #: For an outline it is the only source there is - an outline has no pages.
+    stated: float | None = None
 
     @property
     def minutes(self) -> float:
@@ -210,11 +215,23 @@ class Runtime:
         constant fixes that - the words are simply not proportional to the time.
 
         Pages are, because pages are what the format was designed to measure,
-        and the curve above is fitted to 2,520 real films rather than to a
+        and the curve above is fitted to 69 real films rather than to a
         constant somebody picked. The content timing stays on as a DIAGNOSTIC:
         when the two disagree badly the extraction is usually broken, which is
         worth saying out loud and is not worth silently averaging away.
+
+        (This docstring used to claim 2,520 films. That is Stephen Follows'
+        sample - the study whose conclusion this curve is measured AGAINST, see
+        "Why not the published 1.1 figure" in BUDGET.md - not its own evidence,
+        which overstated the curve's backing thirty-six fold.)
+
+        A STATED runtime outranks all of it. The curve is an inference from the
+        pages; a producer saying the picture runs 94 minutes is not an inference
+        at all. And an outline has no pages, so for one of those this is the
+        only source there is.
         """
+        if self.stated and self.stated > 0:
+            return float(self.stated)
         return self.page_minutes
 
     @property
@@ -247,6 +264,11 @@ class Runtime:
         """Whether the PAGE COUNT can be believed - which is what the runtime
         now rests on. Not whether the two timing methods agree; they disagree
         by design."""
+        if self.stated and self.stated > 0:
+            # This check exists to catch a page count the extraction got wrong.
+            # Once a runtime is stated the page count sets nothing, so there is
+            # nothing left for it to protect and it would only cry wolf.
+            return True
         if self.words < WORDS_TO_JUDGE:
             return True                      # too little to judge
         if not self.pages:
@@ -274,7 +296,8 @@ class Runtime:
         return None
 
 
-def time_script(script: Script, pacing: float = DEFAULT_PACING) -> Runtime:
+def time_script(script: Script, pacing: float = DEFAULT_PACING,
+                stated: float | None = None) -> Runtime:
     scenes = []
     for scene in script.scenes:
         dialogue_words = sum(count_words(line) for _, line in scene.dialogue)
@@ -288,6 +311,7 @@ def time_script(script: Script, pacing: float = DEFAULT_PACING) -> Runtime:
         page_minutes=minutes_from_pages(script.pages, pacing=pacing),
         content_minutes=sum(s.minutes for s in scenes),
         pages=script.pages,
+        stated=stated,
     )
 
 

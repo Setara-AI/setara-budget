@@ -102,6 +102,12 @@ class Scene:
     action: list[str] = field(default_factory=list)
     dialogue: list[tuple[str, str]] = field(default_factory=list)   # (character, line)
     line_count: int = 0
+    #: Set only by the outline reader (see budget/outline.py). An outline has no
+    #: cue lines to read a cast from and no pages to measure, so both are given
+    #: rather than derived. Left as None by the screenplay parser, which derives
+    #: them the way it always has.
+    cast: list[str] | None = None
+    page_share: float | None = None
 
     @property
     def is_night(self) -> bool:
@@ -114,6 +120,8 @@ class Scene:
 
     @property
     def characters(self) -> list[str]:
+        if self.cast is not None:
+            return list(self.cast)
         seen = []
         for name, _ in self.dialogue:
             if name not in seen:
@@ -126,6 +134,8 @@ class Scene:
 
     @property
     def pages(self) -> float:
+        if self.page_share is not None:
+            return self.page_share
         return self.line_count / LINES_PER_PAGE
 
     @property

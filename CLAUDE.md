@@ -5,7 +5,7 @@
    See **BUDGET.md**. Pure Python, no LLM calls; `budget/pricing.py` is the model price
    registry and every rate there carries `verified` + `source`.
 
-Both are verified with `python3 -m unittest discover -s tests -t .` (249 tests, no API key).
+Both are verified with `python3 -m unittest discover -s tests -t .` (299 tests, no API key).
 
 ---
 

@@ -521,6 +521,51 @@ epics predicted short (Casino, The Godfather) and animation predicted long.
 once you have delivered shows of your own to fit against — that beats any
 industry curve for your material.
 
+## Outlines, and stating the runtime yourself
+
+Not every job arrives as a screenplay. `budget/outline.py` reads an outline into
+the same `Script` the screenplay parser produces, so nothing downstream needs to
+know which document it got.
+
+The catch is structural, not incidental: **an outline has no pages**, so the page
+curve has nothing to measure and `script.pages` is `0`. A runtime therefore has
+to be *stated*, and `time_script(script, stated=…)` is where it goes in. A stated
+runtime **replaces** the curve rather than adjusting it — a producer saying the
+picture runs 94 minutes is not offering a correction to be blended, they are
+telling you the answer — and pacing does not scale it either, for the same
+reason. The same field is available for a screenplay, for anyone who knows the
+runtime and would rather say so than argue with the page count through pacing.
+
+Without a stated runtime an outline times to **zero**, deliberately. A plausible
+number invented from prose length would be believed; a zero cannot be missed,
+and the app refuses to leave the upload screen until the question is answered.
+
+What is and is not known — this matters more here than anywhere else, because an
+outline invites confident guessing:
+
+| | |
+|---|---|
+| beats | counted — the outline marks them, or paragraphs do |
+| runtime | stated by the producer; nothing infers it |
+| locations | only where a beat labels one; **never invented** |
+| characters | a heuristic, and the number to distrust |
+
+Under-claiming is the deliberate choice. A beat with no label contributes no
+location plate rather than a made-up one, and the app says so on screen. The
+alternative produces a figure that looks measured and is not.
+
+This lands softly because of what drives the bid. Labour and video generation are
+both functions of runtime — which is *stated*, so it is exactly as firm as it
+would be with a script — and reference images, the only line an outline really
+softens, are 2–8% of the total. An outline prices the shape of the job; the
+small line firms up when a screenplay replaces it.
+
+Two guards worth knowing. **Three beats is the floor**: a screenplay whose PDF
+extraction collapsed into one wall of text yields exactly one "beat", and must
+keep failing loudly rather than be priced as an outline off a made-up runtime.
+And names are read from the beat *body*, never its label — reading the label too
+made "THE DINER" a character with its own look sheet.
+
 ## Pacing — the residual, made adjustable
 
 Divide each film's real runtime by what the length curve predicts and what is
