@@ -75,6 +75,27 @@ create policy "read own events" on public.production_events
   for select to authenticated
   using (user_id = auth.uid() or public.is_admin());
 
+-- --------------------------------------------------------------------------
+-- Grants, stated rather than assumed.
+--
+-- RLS decides WHICH ROWS a role may touch; a grant decides whether it may
+-- touch the table at all, and the two fail in ways that look identical from
+-- the browser. Supabase normally grants these automatically to tables created
+-- in `public`, so this is usually a no-op - but it is free, it is idempotent,
+-- and it removes the one cause of a silent "nothing is being recorded" that
+-- cannot be diagnosed from outside the project.
+--
+-- Deliberately no UPDATE or DELETE: the trail stays append-only at the grant
+-- level as well as the policy level.
+-- --------------------------------------------------------------------------
+grant select, insert on public.production_events to authenticated;
+
+-- ===========================================================================
+-- IS ANYTHING IN THERE? Run this first - it needs no join and no permissions
+-- reasoning, so it separates "nothing was recorded" from "my query is wrong".
+-- ===========================================================================
+-- select count(*) as rows, max(at) as most_recent from public.production_events;
+
 -- ===========================================================================
 -- READING IT. Uncomment what you need.
 -- ===========================================================================
