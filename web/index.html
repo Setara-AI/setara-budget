@@ -5937,6 +5937,23 @@ async function ingest(file) {
 
     if (token !== ingestToken) return;      // a newer drop already landed
 
+    /* A second screenplay is a second film, not a correction to the first.
+       Dropping one used to overwrite whatever was open - the previous script,
+       its crew, its rates and its stated runtime all gone, with no undo that
+       made it obvious and nothing on screen to say it had happened.
+
+       So a drop onto a production that already holds a script opens a NEW one
+       and leaves the old where it was. Replacing a draft in place is then a
+       deliberate act - delete the production you no longer want - which is the
+       right way round: an extra production is a click to remove, and work
+       thrown away is not recoverable at all.
+
+       Only after the parse has succeeded, so a file that turns out to be
+       unreadable cannot leave an empty production behind. */
+    const held = state.scriptText.trim()
+      && parseSource(state.scriptText, state.sourceKind).scenes.length;
+    if (held) switchProduction(newProduction(untitledName()));
+
     state.scriptText = text;
     state.sourceKind = kind;
     /* A runtime carried over from the last document would be applied silently
@@ -6577,12 +6594,24 @@ async function bindAuth() {
 
   /* Fires on load with an existing session too, so a returning visitor is
      signed in without touching the form. */
+  /* Fires on far more than signing in: a token refresh, and - the one that
+     did the damage - the tab regaining focus. Every one of those re-ran
+     pullProductions, which rebuilds the list from the server and switches to
+     the newest row. So clicking New production, going off to find the file and
+     coming back landed you on the last budget with the empty production you
+     were about to fill silently discarded.
+
+     The session says WHO; only a change of who is a reason to reload. */
+  let loadedFor = null;
   sb.auth.onAuthStateChange((_event, session) => {
     const user = session ? session.user : null;
     setAccount(user);
     showGate(!user);
     syncMark("saved");
-    if (user) pullProductions();
+    if (!user) { loadedFor = null; return; }
+    if (loadedFor === user.id) return;      // same person, still here
+    loadedFor = user.id;
+    pullProductions();
   });
 
   const { data } = await sb.auth.getSession();
