@@ -66,6 +66,20 @@ create policy "delete own scripts" on storage.objects
 -- serves every screenplay in it to anyone holding the URL.
 -- select id, public, file_size_limit from storage.buckets where id = 'scripts';
 
+-- NOTE, from getting this wrong repeatedly: GET /storage/v1/bucket/scripts
+-- with the ANON key answers "Bucket not found" whether the bucket exists or
+-- not - reading bucket metadata needs the service role, and the 404 is about
+-- the key, not the bucket. Neither is POST /storage/v1/object/list/<bucket>,
+-- which returns [] for any name at all.
+--
+-- The only check that distinguishes them from outside is an upload attempt,
+-- read against a name that certainly does not exist:
+--
+--   real bucket, no permission -> 403 "new row violates row-level security policy"
+--   no such bucket             -> 404 "Bucket not found"
+--
+-- A 403 there is the GOOD answer: the bucket resolved and RLS did its job.
+
 -- All three policies are present.
 -- select policyname, cmd from pg_policies
 --  where schemaname = 'storage' and tablename = 'objects'
