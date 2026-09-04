@@ -23,6 +23,12 @@
      arrives in a message is recognisably the thing the recipient is about to
      open rather than a bare URL.
 
+     The filename carries a version. Messaging apps and social crawlers cache a
+     preview image hard and by URL, so replacing the bytes at the same path
+     leaves everyone who has already seen the link looking at the old one - and
+     a query string is not enough, since plenty of crawlers drop it. A new path
+     is the only reliable way to say "this is a different picture".
+
      og:image MUST be absolute - a relative path unfurls as no image at all,
      because the crawler is not resolving it against a page it is rendering. -->
 <meta property="og:type" content="website">
@@ -30,7 +36,7 @@
 <meta property="og:title" content="Setara — Production budget">
 <meta property="og:description" content="Turn a screenplay or an outline into a bid, a crew and a schedule.">
 <meta property="og:url" content="https://budget.setara.ai/">
-<meta property="og:image" content="https://budget.setara.ai/og.jpg">
+<meta property="og:image" content="https://budget.setara.ai/og-2.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -38,7 +44,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Setara — Production budget">
 <meta name="twitter:description" content="Turn a screenplay or an outline into a bid, a crew and a schedule.">
-<meta name="twitter:image" content="https://budget.setara.ai/og.jpg">
+<meta name="twitter:image" content="https://budget.setara.ai/og-2.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
