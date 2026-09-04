@@ -6308,17 +6308,20 @@ async function pullProductions() {
       .order("updated_at", { ascending: false });
     if (error) throw error;
 
-    /* A session opens on the uploader, never on the budget it happened to
-       close on. Signing in is the start of a job and the job starts with a
-       screenplay, so the saved work goes in the picker and onto the landing
-       screen, and the ACTIVE production is a fresh blank.
+    /* Signing in lands you where your work is. Someone with a production
+       open goes straight back into it - most recently touched first, which is
+       what `order(updated_at desc)` above is for - and only someone with
+       nothing saved meets the uploader.
 
-       That blank only ever exists in memory: `cloudSave` refuses to write a
-       production with no script, so signing in and looking around cannot
-       litter the account with empty rows. */
+       The blank made for that second case exists only in memory: `cloudSave`
+       refuses to write a production with no script, so an account that signs
+       in, looks around and leaves is not left holding an empty row. Which is
+       also why the row that comes back first is never an empty one. */
     state.productions = (data || []).map(productionFromRow);
     state.activeProduction = null;
-    switchProduction(newProduction(untitledName()));
+    switchProduction(state.productions.length
+      ? state.productions[0].id
+      : newProduction(untitledName()));
   } catch (err) {
     syncMark("failed");
     console.error("could not load productions:", err);

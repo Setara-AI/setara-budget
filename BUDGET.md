@@ -720,16 +720,18 @@ idempotent, so it can be run against the live project safely. Admins (rows in
 `public.admins`) may **read** every production; write policies stay owner-only,
 so oversight can never quietly alter somebody's bid.
 
-**The landing screen.** Every session opens here — signing in is the start of a
-job, and the job starts with a screenplay, so the app never reopens on the
-budget it happened to close on. The active production at sign-in is a fresh
-blank, and that blank lives only in memory: `cloudSave` refuses to write a
-production with no script, so signing in and looking around cannot litter the
-account with empty rows.
+**The landing screen.** Signing in lands you where your work is: with a saved
+production you go straight back into it, most recently touched first, and only
+an account with nothing saved meets the uploader. The blank made for that second
+case lives only in memory — `cloudSave` refuses to write a production with no
+script — so signing in, looking around and leaving does not litter the account
+with empty rows. Which is also why the row that comes back first is never an
+empty one.
 
-Saved work stays one click away — the picker in the header, and chips under the
-drop target listing the six most recent productions. The sample is there too,
-so the tool can be shown to someone who has no screenplay on them.
+Whenever the uploader *is* showing, saved work stays one click away: the picker
+in the header, and chips under the drop target listing the six most recent
+productions. The sample is there too, so the tool can be shown to someone who
+has no screenplay on them.
 
 Both screens are full-bleed film: twelve stills in `web/stills/`, cross-faded
 two layers at a time so only two frames are ever decoded at once, shuffled per
