@@ -5551,6 +5551,10 @@ function bindExports() {
     if (!item) return;
     close();
     const est = buildEstimate(state);
+    /* Always recorded, never sampled. Exporting is the moment a number leaves
+       the building and becomes something a client was actually shown, which
+       makes it the one event in the trail worth the most later. */
+    recordEvent("export");
     if (item.dataset.export === "__onepager") { printPage(onePagerHTML(est)); return; }
     download(`${slugName()}-line-sheet.csv`, "text/csv", lineSheetCSV(est));
   });
@@ -5965,6 +5969,10 @@ async function ingest(file) {
     nameFromScript((kind === "outline" ? titleFromOutline(text) : titleFromScript(text))
       || file.name);
     refresh();
+    /* Reset first: this is a different film, so the previous production's bid
+       is not a baseline for this one's movement. */
+    lastEvent = { at: 0, bid: null };
+    recordEvent("upload");
 
     /* After the refresh, deliberately. The bid is computed from text that is
        already in hand, so it must not wait on a network round trip - the
@@ -6469,6 +6477,7 @@ async function cloudSave(immediate) {
       production.row = data.id;      // so the next save updates, not duplicates
     }
     syncMark("saved");
+    recordEvent("change");
   } catch (err) {
     syncMark("failed");
     console.error("could not save:", err);
@@ -6534,6 +6543,76 @@ async function originalLink(path) {
   } catch (err) {
     console.error("could not link the original document:", err);
     return null;
+  }
+}
+
+/* --- the trail ------------------------------------------------------------
+   `productions` is UPDATED on every save, so it is always the current state
+   and never the story. This writes the story: a row each time a bid
+   meaningfully moves, so how a client arrived at a number is answerable
+   afterwards instead of lost.
+
+   Sampling is the whole design problem. Dragging a slider recomputes on every
+   frame, and a row per frame is not a trail, it is noise that hides the trail.
+   So a 'change' is only recorded when BOTH are true: half a minute has passed,
+   and the bid actually moved by more than half a percent. Uploads and exports
+   are always recorded - they are decisions, not exploration.
+
+   Best-effort throughout. A trail is worth having; it is not worth failing a
+   budget for, so every error stops here. */
+const EVENT_MIN_GAP = 30000;      // ms between 'change' rows
+const EVENT_MIN_MOVE = 0.005;     // and the bid has to have moved this much
+let lastEvent = { at: 0, bid: null };
+
+async function recordEvent(kind) {
+  if (!cloudReady() || !account || pulling) return;
+  const est = window.__est;
+  const production = activeProduction();
+  if (!est || !production || !state.scriptText.trim()) return;
+
+  const now = Date.now();
+  if (kind === "change") {
+    if (now - lastEvent.at < EVENT_MIN_GAP) return;
+    const was = lastEvent.bid;
+    if (was != null && Math.abs(est.bid - was) / (Math.abs(was) || 1) < EVENT_MIN_MOVE) return;
+  }
+  lastEvent = { at: now, bid: est.bid };
+
+  const money2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+  try {
+    const { error } = await sb.from("production_events").insert({
+      user_id: account.id,
+      /* Null until the production has been saved once. The name is copied in
+         regardless, so a row still reads as something after the production it
+         pointed at is deleted - which is exactly when a trail earns its keep. */
+      production_id: production.row || null,
+      production_name: production.name,
+      kind,
+      bid: money2(est.bid),
+      crew: money2(est.staffing.total),
+      generation: money2(est.generation.subtotal),
+      contingency: money2(est.contingency),
+      runtime_minutes: money2(est.runtimeMinutes),
+      weeks: est.staffing.weeks,
+      /* A bid is only meaningful beside the assumptions that produced it, and
+         those change - a row that had to look them up later would report
+         today's levers against last week's number. */
+      levers: {
+        source: state.sourceKind,
+        runtimeStated: state.runtimeOverride || null,
+        shootingRatio: state.cfg.generatedPerUsable,
+        generationsPerImage: state.cfg.generationsPerImage,
+        revisions: state.cfg.labourRevisions,
+        pacing: state.cfg.pacing,
+        contingencyRate: state.contingency,
+        videoModel: state.videoModel,
+        imageModel: state.imageModel,
+        crewHeads: state.roles.reduce((a, r) => a + (r.count || 0), 0),
+      },
+    });
+    if (error) throw error;
+  } catch (err) {
+    console.error("could not record the event:", err);
   }
 }
 

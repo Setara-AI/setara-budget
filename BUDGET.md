@@ -764,6 +764,39 @@ visit, and held on a hidden tab. Every rule that dresses the app for film is
 scoped to `body.gated` or `.gate`, so the moment a screenplay lands the app is
 exactly the app again.
 
+## The trail — watching a bid move
+
+`productions` is *updated* on every save, so it is always the current state and
+never the story. `public.production_events` is the story: an append-only row each
+time a bid meaningfully moves, so
+
+> *Acme opened Sky's End at $340k, pushed the shooting ratio to 6:1, watched it
+> reach $520k, settled at $410k, exported.*
+
+is a query rather than something nobody can ever know. Set it up with
+`supabase/events.sql`.
+
+**Sampling is the whole design problem.** Dragging a slider recomputes on every
+frame, and a row per frame is not a trail — it is noise that hides one. A
+`change` is recorded only when **both** are true: thirty seconds have passed
+*and* the bid moved more than half a percent. `upload` and `export` are never
+sampled; they are decisions rather than exploration, and an export is the moment
+a number left the building and became something a client was actually shown.
+
+Each row copies in the figures **and the levers that produced them** — ratio,
+generations, revisions, pacing, contingency, models, crew heads. A row that had
+to join back for its assumptions would report today's levers against last week's
+number.
+
+Two deliberate properties. There is **no update or delete policy**, so nothing
+reachable from a browser can rewrite or quietly prune the trail — which is the
+only thing that makes it worth keeping. And `production_id` is `on delete set
+null` with the name copied alongside, so deleting a production does not erase
+the record of what it once cost; that is precisely when the trail earns its keep.
+
+Admins read every client's trail through the same `is_admin()` rule as
+everything else. Queries for all of it are at the bottom of `supabase/events.sql`.
+
 ## Not built yet
 
 - PDF screenplay parsing (Fountain, .fdx, .txt and .md work).
